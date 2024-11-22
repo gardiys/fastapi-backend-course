@@ -1,4 +1,3 @@
-
 class GroupOrder("Order"):
     def __init__(self, customers):
         super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
