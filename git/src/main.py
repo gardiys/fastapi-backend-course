@@ -1,4 +1,20 @@
 
+class GroupOrder("Order"):
+    def __init__(self, customers):
+        super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
+        self.customers = customers
+
+    def split_bill(self):
+        if not self.customers:
+            raise ValueError("Нет клиентов для разделения счета.")
+        total = self.final_total()
+        return total / len(self.customers)
+
+    def __str__(self):
+        customer_list = ", ".join([customer.name for customer in self.customers])
+        dish_list = "\n".join([str(dish) for dish in self.dishes])
+        return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
+
 class Order:
     TAX_RATE = 0.08  # 8% налог
     SERVICE_CHARGE = 0.05  # 5% сервисный сбор
@@ -6,13 +22,13 @@ class Order:
     def __init__(self, customer):
         self.customer = customer
         self.dishes = []
-    
+
     def add_dish(self, dish):
         if isinstance(dish, Dish):
             self.dishes.append(dish)
         else:
             raise ValueError("Можно добавлять только объекты класса Dish.")
-    
+
     def remove_dish(self, dish):
         if dish in self.dishes:
             self.dishes.remove(dish)
@@ -53,7 +69,7 @@ class GroupOrder(Order):
         customer_list = ", ".join([customer.name for customer in self.customers])
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
-  
+
 class Dish:
     def __init__(self, name, price, category):
         self.name = name
@@ -62,6 +78,9 @@ class Dish:
 
     def __str__(self):
         return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
+
+
+
 
 class Customer:
     def __init__(self, name, membership="Regular"):
@@ -75,6 +94,7 @@ class Customer:
 
     def __str__(self):
         return f"Customer: {self.name}, Membership: {self.membership}"
+
 # Пример использования
 
 # Создаем блюда
