@@ -63,6 +63,8 @@ class Dish:
         return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
 
 
+
+
 class Customer:
     def __init__(self, name, membership="Regular"):
         self.name = name
@@ -75,7 +77,6 @@ class Customer:
 
     def __str__(self):
         return f"Customer: {self.name}, Membership: {self.membership}"
-
 # Пример использования
 
 # Создаем блюда
