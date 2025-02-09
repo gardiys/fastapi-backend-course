@@ -1,0 +1,31 @@
+name: CI
+
+on:  # Определяет триггеры для выполнения workflow
+  push:
+    branches:
+      - main  # Запуск при пуше в ветку main
+  pull_request:
+    branches:
+      - main  # Запуск при создании pull request в ветку main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest  # Используем последнюю версию Ubuntu
+
+    steps:
+    - name: Checkout code  # Клонируем репозиторий
+      uses: actions/checkout@v2
+
+    - name: Set up Python  # Устанавливаем Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Замените на версию Python, которую вы используете
+
+    - name: Install dependencies  # Устанавливаем зависимости
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff  # Установите линтер ruff. Вы также можете установить другие зависимости, если нужно.
+
+    - name: Run ruff  # Запускаем линтер
+      run: |
+        ruff .  # Линтуем весь проект, вы можете указать конкретные каталоги или файлы
