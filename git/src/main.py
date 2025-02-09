@@ -53,6 +53,20 @@ class Order:
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Order for {self.customer.name}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
 
+<<<<<<< HEAD
+=======
+    def split_bill(self):
+        if not self.customers:
+            raise ValueError("Нет клиентов для разделения счета.")
+        total = self.final_total()
+        return total / len(self.customers)
+
+    def __str__(self):
+        customer_list = ", ".join([customer.name for customer in self.customers])
+        dish_list = "\n".join([str(dish) for dish in self.dishes])
+        return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
+  
+>>>>>>> 820caab7d845b3367fb32eac914a44eb841b551e
 class Dish:
     def __init__(self, name, price, category):
         self.name = name
@@ -62,12 +76,15 @@ class Dish:
     def __str__(self):
         return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 3272ede (fix: main)
 =======
 >>>>>>> 6d52a1d (fix: first-branch)
 
+=======
+>>>>>>> 820caab7d845b3367fb32eac914a44eb841b551e
 class Customer:
     def __init__(self, name, membership="Regular"):
         self.name = name
