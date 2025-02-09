@@ -1,3 +1,20 @@
+class GroupOrder("Order"):
+    def __init__(self, customers):
+        super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
+        self.customers = customers
+
+    def split_bill(self):
+        if not self.customers:
+            raise ValueError("Нет клиентов для разделения счета.")
+        total = self.final_total()
+        return total / len(self.customers)
+
+    def __str__(self):
+        customer_list = ", ".join([customer.name for customer in self.customers])
+        dish_list = "\n".join([str(dish) for dish in self.dishes])
+        return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
+
+
 class Order:
     TAX_RATE = 0.08  # 8% налог
     SERVICE_CHARGE = 0.05  # 5% сервисный сбор
@@ -35,22 +52,11 @@ class Order:
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Order for {self.customer.name}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
 
-
-class GroupOrder(Order):
-    def __init__(self, customers):
-        super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
-        self.customers = customers
-
     def split_bill(self):
         if not self.customers:
             raise ValueError("Нет клиентов для разделения счета.")
         total = self.final_total()
         return total / len(self.customers)
-
-    def __str__(self):
-        customer_list = ", ".join([customer.name for customer in self.customers])
-        dish_list = "\n".join([str(dish) for dish in self.dishes])
-        return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
 
 
 class Dish:
@@ -104,4 +110,3 @@ group_order.add_dish(coffee)
 
 print(group_order)  # Вывод информации о групповом заказе
 print(f"Split Bill: ${group_order.split_bill():.2f} per person")  # Стоимость на каждого
-
