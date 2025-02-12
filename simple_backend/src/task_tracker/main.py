@@ -25,7 +25,8 @@ class DataBase:
         stat = self.db_client.get_all_records()
         if task_id <= len(stat):
             self.db_client.update_record_by_key(
-                upd_filter={"id": task_id}, new_data=[{"text": message, "status": status}]
+                upd_filter={"id": task_id},
+                new_data=[{"text": message, "status": status}],
             )
             return "Task changed!"
         return f"Task ID{task_id} is not in task list!"
