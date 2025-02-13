@@ -4,6 +4,19 @@ import requests
 
 class DataBase:
     __x_master_key = "$2a$10$IMh3f/dBpBNNOcK6OQMhJ.ZdcQWlXuR66nyHse7Jhto3MCUka62vm"
+    __url = "https://api.jsonbin.io/v3/b/67ac93dfacd3cb34a8df05f9"
+    __headers = {
+        "Content-Type": "application/json",
+        "X-Master-Key": __x_master_key,
+    }
+
+    @property
+    def url(self):
+        return self.__url
+
+    @property
+    def headers(self):
+        return self.__headers
 
     def read(self):
         url = "https://api.jsonbin.io/v3/b/67ac93dfacd3cb34a8df05f9/latest"
@@ -20,38 +33,25 @@ class DataBase:
         else:
             task_id = 1
 
-        url = "https://api.jsonbin.io/v3/b"
-        headers = {
-            "Content-Type": "application/json",
-            "X-Master-Key": self.__x_master_key,
-        }
-        data = {task_id: {"text": message, "status": status}}
+        stat[task_id] = {"text": message, "status": status}
+        requests.put(url=self.url, json=stat, headers=self.headers)
+        return "Task created!"
 
-        requests.post(url, json=data, headers=headers)
-
-        return "To do list created!"
-
-    def update(self, task_id: int, message: str, status: bool):
+    def update(self, task_id: str, message: str, status: bool):
         stat = self.read()
-        if task_id <= len(stat()):
-            url = "https://api.jsonbin.io/v3/b/67ac93dfacd3cb34a8df05f9"
-            headers = {
-                "Content-Type": "application/json",
-                "X-Master-Key": self.__x_master_key,
-            }
-            data = {task_id: {"text": message, "status": status}}
-            requests.put(url, json=data, headers=headers)
-            return "Task created!"
+        if task_id in stat.keys():
+            stat[task_id] = {"text": message, "status": status}
+            requests.put(url=self.url, json=stat, headers=self.headers)
+            return "Task update!"
         return f"Task ID{task_id} is not in task list!"
 
-    def delete(self):
-        url = "https://api.jsonbin.io/v3/b/67ac93dfacd3cb34a8df05f9"
-        headers = {
-            "X-Master-Key": self.__x_master_key,
-        }
-        requests.delete(url, json=None, headers=headers)
-
-        return "To do list delete!"
+    def delete(self, task_id: str):
+        stat = self.read()
+        if task_id in stat.keys():
+            stat.pop(task_id)
+            requests.put(url=self.url, json=stat, headers=self.headers)
+            return "Task delete!"
+        return f"Task ID{task_id} is not in task list!"
 
 
 app = FastAPI()
@@ -72,12 +72,12 @@ def create_task(text: str = Body(), status: bool = Body()) -> str:
 
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int, text: str = Body(), status: bool = Body()) -> str:
+def update_task(task_id: str, text: str = Body(), status: bool = Body()) -> str:
     result = db.update(task_id, text, status)
     return result
 
 
 @app.delete("/tasks/{task_id}")
-def delete_task() -> str:
-    result = db.delete()
+def delete_task(task_id: str) -> str:
+    result = db.delete(task_id)
     return result
