@@ -1,9 +1,9 @@
-import json
+from db import DataBase
 
+# При создании задачи указывается ее имя, id - автоинкремент, status - Открыта (так как только создана)
 class MyTasks:
-    all_tasks = []
-
     def __init__(self, name):
+        self.__db = DataBase("database.json")
         self.__task_id = self.__initial_task_id()
         self.__task_name = name
         self.__status = "Открыта"
@@ -31,17 +31,11 @@ class MyTasks:
 
     @property
     def info(self):
-        return {
-            "id": self.task_id,
-            "name": self.task_name,
-            "status": self.status
-        }
+        return {"id": self.task_id, "name": self.task_name, "status": self.status}
 
+    # функция для автоматической записи id задачи (id не повторяющийся)
     def __initial_task_id(self):
-        try:
-            with open("database.json", "r", encoding="utf-8") as file:
-                data = json.load(file)
-        except:
+        if not (tasks := self.__db.get_data()):
             return 1
 
-        return data[-1].get("id") + 1
+        return tasks[-1].get("id") + 1

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, status
+from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
 from utils import get, post, put, delete
 
