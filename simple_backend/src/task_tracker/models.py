@@ -1,3 +1,5 @@
+import json
+
 class MyTasks:
     all_tasks = []
 
@@ -27,8 +29,19 @@ class MyTasks:
     def status(self, status):
         self.__status = status
 
+    @property
+    def info(self):
+        return {
+            "id": self.task_id,
+            "name": self.task_name,
+            "status": self.status
+        }
+
     def __initial_task_id(self):
-        if not MyTasks.all_tasks:
+        try:
+            with open("database.json", "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except:
             return 1
 
-        return MyTasks.all_tasks[-1].__task_id + 1
+        return data[-1].get("id") + 1
