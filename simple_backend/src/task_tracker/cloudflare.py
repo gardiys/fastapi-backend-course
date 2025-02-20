@@ -19,7 +19,9 @@ class CloudFlare:
 
     def send_prompt(self, task_name):
         try:
-            data = {"prompt": f"Объясни решение этой задачи на русском языке: {task_name}"}
+            data = {
+                "prompt": f"Объясни решение этой задачи на русском языке: {task_name}"
+            }
 
             response = requests.post(
                 url=self.__cloudflare_url, headers=self.headers, json=data
