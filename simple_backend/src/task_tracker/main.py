@@ -7,10 +7,10 @@ app = FastAPI()
 
 @app.get("/tasks")
 def get_tasks():
-    if response := get():
-        return {"message": response}
-
-    return JSONResponse(status_code=200, content={"message": "Список пуст"})
+    tasks = get()
+    if "error" in tasks:
+        return JSONResponse(status_code=500, content={"message": tasks["error"]})
+    return {"message": tasks}
 
 
 @app.post("/tasks")
@@ -20,12 +20,10 @@ def create_task(data=Body()):
             status_code=400, content={"message": "Неверный формат данных"}
         )
 
-    if response := post(data["name"]):
-        return {"message": "Задача добавлена", "response": response}
-
-    return JSONResponse(
-        status_code=500, content={"message": "Не получилось добавить задачу"}
-    )
+    task = post(data["name"])
+    if "error" in task:
+        return JSONResponse(status_code=500, content={"message": task["error"]})
+    return {"message": "Задача добавлена", "response": task}
 
 
 @app.put("/tasks/{task_id}")
@@ -35,19 +33,15 @@ def update_task(task_id: int, data=Body()):
             status_code=400, content={"message": "Неверный формат данных"}
         )
 
-    if response := put(task_id, data.get("name"), data.get("status")):
-        return {"message": "Задача была обновлена", "response": response}
-
-    return JSONResponse(
-        status_code=500, content={"message": "Не получилось обновить задачу"}
-    )
+    task = put(task_id, data.get("name"), data.get("status"))
+    if "error" in task:
+        return JSONResponse(status_code=500, content={"message": task["error"]})
+    return {"message": "Задача была обновлена", "response": task}
 
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
-    if response := delete(task_id):
-        return ({"message": "Задача была удалена", "response": response},)
-
-    return JSONResponse(
-        status_code=500, content={"message": "Не получилось удалить задачу"}
-    )
+    task = delete(task_id)
+    if "error" in task:
+        return JSONResponse(status_code=500, content={"message": task["error"]})
+    return {"message": "Задача была удалена", "response": task}

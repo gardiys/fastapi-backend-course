@@ -1,9 +1,10 @@
-from db import DataBase
+from stateless import Stateless
+
 
 # При создании задачи указывается ее имя, id - автоинкремент, status - Открыта (так как только создана)
 class MyTasks:
     def __init__(self, name):
-        self.__db = DataBase("database.json")
+        self.__state = Stateless()
         self.__task_id = self.__initial_task_id()
         self.__task_name = name
         self.__status = "Открыта"
@@ -35,7 +36,7 @@ class MyTasks:
 
     # функция для автоматической записи id задачи (id не повторяющийся)
     def __initial_task_id(self):
-        if not (tasks := self.__db.get_data()):
+        if not (tasks := self.__state.get_state()):
             return 1
 
         return tasks[-1].get("id") + 1
