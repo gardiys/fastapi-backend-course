@@ -26,7 +26,7 @@ class CloudFlare:
             response = requests.post(
                 url=self.__cloudflare_url, headers=self.headers, json=data
             )
-            print(response.json()["result"]["response"])
+
             return response.json()["result"]["response"]
 
         except Exception as e:
