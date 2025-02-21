@@ -1,5 +1,4 @@
-from stateless import Stateless
-from cloudflare import CloudFlare
+from schemas import CloudFlare, Stateless
 
 
 state = Stateless()

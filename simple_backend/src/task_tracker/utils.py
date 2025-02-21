@@ -1,8 +1,7 @@
-from db import DataBase
 from models import MyTasks
-from stateless import Stateless
+from schemas import Stateless
 
-db = DataBase("database.json")
+
 state = Stateless()
 
 
@@ -51,10 +50,10 @@ def delete(task_id: int):
 
     for task in tasks:
         if task.get("id") == task_id:
-            poped_task = tasks.pop(task_id - 1)
+            tasks.remove(task)
 
             if state.update_state(tasks):
-                return poped_task
+                return task
 
             return {"error": "Не удалось обновить состояние"}
 
