@@ -1,9 +1,12 @@
+import requests
 from fastapi import FastAPI, HTTPException
 import json
 
 app = FastAPI()
 
 TASK_FILE = "tasks.json"
+GITHUB_TOKEN = "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"
+GIST_ID = "4cb4c4dd361a063120e71e46825c415e"
 
 
 class Task:
@@ -14,38 +17,63 @@ class Task:
 
 
 class TaskFileManager:
-    def __init__(self, task_file):
-        self.task_file = task_file
+    def __init__(self, gist_id, github_token):
+        self.gist_id = gist_id
+        self.github_token = github_token
         self.tasks = self._load_tasks()
         self.task_id_counter = self._get_next_task_id()
 
     def _load_tasks(self):
+        headers = {"Authorization": f"token {self.github_token}"}
+        gist_url = f"https://api.github.com/gists/{self.gist_id}"
         try:
-            with open(self.task_file, "r") as f:
-                tasks_data = json.load(f)
-                tasks = []
-                max_id = 0
-                for task_data in tasks_data:
-                    task = Task(
-                        id=task_data["id"],
-                        title=task_data["title"],
-                        status=task_data["status"],
-                    )
-                    tasks.append(task)
-                    if task.id > max_id:
-                        max_id = task.id
-                return tasks
-        except FileNotFoundError:
+            response = requests.get(gist_url, headers=headers)
+            response.raise_for_status()
+            gist_data = response.json()
+
+            tasks_file = gist_data["files"].get("tasks.json")
+            if tasks_file:
+                tasks_content = tasks_file["content"]
+                if tasks_content:
+                    tasks_data = json.loads(tasks_content)
+                    tasks = []
+                    max_id = 0
+                    for task_data in tasks_data:
+                        task = Task(
+                            id=task_data["id"],
+                            title=task_data["title"],
+                            status=task_data["status"],
+                        )
+                        tasks.append(task)
+                        if task.id > max_id:
+                            max_id = task.id
+                    return tasks
+                else:
+                    return []
+            else:
+                return []
+        except requests.exceptions.RequestException as e:
+            print(f"Error loading tasks from Gist: {e}")
             return []
 
     def _save_tasks(self):
-        with open(self.task_file, "w") as f:
-            tasks_list_for_json = []
-            for task in self.tasks:
-                tasks_list_for_json.append(
-                    {"id": task.id, "title": task.title, "status": task.status}
-                )
-            json.dump(tasks_list_for_json, f, indent=4)
+        headers = {"Authorization": f"token {self.github_token}"}
+        gist_url = f"https://api.github.com/gists/{self.gist_id}"
+        tasks_list_for_json = []
+        for task in self.tasks:
+            tasks_list_for_json.append(
+                {"id": task.id, "title": task.title, "status": task.status}
+            )
+        payload = {
+            "files": {
+                "tasks.json": {"content": json.dumps(tasks_list_for_json, indent=4)}
+            }
+        }
+        try:
+            response = requests.patch(gist_url, headers=headers, json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error saving tasks to Gist: {e}")
 
     def _get_next_task_id(self):
         if not self.tasks:
@@ -86,7 +114,7 @@ class TaskFileManager:
         return {"message": "Task deleted"}
 
 
-task_file_manager = TaskFileManager(TASK_FILE)
+task_file_manager = TaskFileManager(GIST_ID, GITHUB_TOKEN)
 
 
 @app.get("/tasks")
