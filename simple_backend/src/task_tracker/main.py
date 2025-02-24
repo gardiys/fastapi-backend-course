@@ -1,9 +1,13 @@
 import requests
 from fastapi import FastAPI, HTTPException
 import json
+import os
 from abc import ABC, abstractmethod
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+load_dotenv()
 
 
 class BaseHTTPClient(ABC):
@@ -38,41 +42,30 @@ class BaseHTTPClient(ABC):
             print(f"Unexpected error: {e}")
             raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-    def _get_request(self, url_path, headers=None, params=None):
+    def _make_request(
+        self, method, url_path, headers=None, params=None, json_data=None
+    ):
         url = f"{self._get_base_url()}{url_path}"
         request_headers = self._get_headers(headers)
         try:
-            response = requests.get(url, headers=request_headers, params=params)
+            response = requests.request(
+                method, url, headers=request_headers, params=params, json=json_data
+            )
             return self._handle_response(response)
         except HTTPException:
             raise
         except Exception as e:
-            print(f"GET request failed: {e}")
-            raise HTTPException(status_code=500, detail=f"GET request failed: {e}")
+            print(f"{method} request failed: {e}")
+            raise HTTPException(status_code=500, detail=f"{method} request failed: {e}")
+
+    def _get_request(self, url_path, headers=None, params=None):
+        return self._make_request("GET", url_path, headers, params=params)
 
     def _post_request(self, url_path, headers=None, json_data=None):
-        url = f"{self._get_base_url()}{url_path}"
-        request_headers = self._get_headers(headers)
-        try:
-            response = requests.post(url, headers=request_headers, json=json_data)
-            return self._handle_response(response)
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"POST request failed: {e}")
-            raise HTTPException(status_code=500, detail=f"POST request failed: {e}")
+        return self._make_request("POST", url_path, headers, json_data=json_data)
 
     def _patch_request(self, url_path, headers=None, json_data=None):
-        url = f"{self._get_base_url()}{url_path}"
-        request_headers = self._get_headers(headers)
-        try:
-            response = requests.patch(url, headers=request_headers, json=json_data)
-            return self._handle_response(response)
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"PATCH request failed: {e}")
-            raise HTTPException(status_code=500, detail=f"PATCH request failed: {e}")
+        return self._make_request("PATCH", url_path, headers, json_data=json_data)
 
 
 class CloudflareLLM(BaseHTTPClient):
@@ -198,38 +191,71 @@ class TaskFileManager(BaseHTTPClient):
     def update_task(self, task_id, task_data):
         for task in self.tasks:
             if task.id == task_id:
-                original_description = task.description
                 if "title" in task_data:
-                    task.title = task_data["title"]
-                    if cloudflare_llm_client:
-                        llm_explanation = cloudflare_llm_client.get_llm_explanation(
-                            task.title
-                        )
-                        if llm_explanation:
-                            task.description = (
-                                f"**Problem Solving Tip from LLM:**\n{llm_explanation}"
-                            )
-                            if original_description:
-                                task.description += f"\n\n**Original Description:**\n{original_description}"
-
-                if "status" in task_data:
+                    self._update_task_title(
+                        task, task_data
+                    )  # Вызываем метод для обновления названия
+                elif "description" in task_data:
+                    self._update_task_description(
+                        task, task_data
+                    )  # Вызываем метод для обновления описания
+                elif (
+                    "status" in task_data
+                ):  # Обрабатываем обновление статуса отдельно, без вложенности
                     task.status = task_data["status"]
-                if "description" in task_data and "title" not in task_data:
-                    task.description = task_data["description"]
-                elif "description" in task_data and "title" in task_data:
-                    if task.description:
-                        task.description += f"\n\n**User Provided Description:**\n{task_data['description']}"
-                    else:
-                        task.description = f"**User Provided Description:**\n{task_data['description']}"
+                    self._save_tasks()
+                    return self._serialize_task(
+                        task
+                    )  # Используем вспомогательный метод для сериализации
+                else:
+                    # Если нет ни title, ни description, ни status - ничего не обновляем, можно вернуть текущую задачу
+                    return self._serialize_task(
+                        task
+                    )  # Возвращаем текущее состояние задачи
 
                 self._save_tasks()
-                return {
-                    "id": task.id,
-                    "title": task.title,
-                    "status": task.status,
-                    "description": task.description,
-                }
+                return self._serialize_task(task)
         raise HTTPException(status_code=404, detail="Task not found")
+
+    def _update_task_title(self, task, task_data):
+        """Обновляет название задачи и получает подсказку от LLM, обновляя описание."""
+        original_description = task.description
+        task.title = task_data["title"]
+        if cloudflare_llm_client:
+            llm_explanation = cloudflare_llm_client.get_llm_explanation(task.title)
+            if llm_explanation:
+                task.description = (
+                    f"**Problem Solving Tip from LLM:**\n{llm_explanation}"
+                )
+                if original_description:
+                    task.description += (
+                        f"\n\n**Original Description:**\n{original_description}"
+                    )
+        if (
+            "description" in task_data
+        ):  # Добавляем пользовательское описание после LLM подсказки
+            if task.description:
+                task.description += (
+                    f"\n\n**User Provided Description:**\n{task_data['description']}"
+                )
+            else:
+                task.description = (
+                    f"**User Provided Description:**\n{task_data['description']}"
+                )
+
+    def _update_task_description(self, task, task_data):
+        """Обновляет только описание задачи."""
+        if "description" in task_data:
+            task.description = task_data["description"]
+
+    def _serialize_task(self, task):
+        """Вспомогательный метод для сериализации объекта Task в словарь."""
+        return {
+            "id": task.id,
+            "title": task.title,
+            "status": task.status,
+            "description": task.description,
+        }
 
     def delete_task(self, task_id):
         self.tasks = [task for task in self.tasks if task.id != task_id]
@@ -238,10 +264,10 @@ class TaskFileManager(BaseHTTPClient):
 
 
 TASK_FILE = "tasks.json"
-GITHUB_TOKEN = "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"
-GIST_ID = "4cb4c4dd361a063120e71e46825c415e"
-CLOUDFLARE_API_TOKEN = "pwVCFw2m7Vs39_YNDeSNExGcDqZVKOz0CePfBMe3"
-CLOUDFLARE_ACCOUNT_ID = "0260be9c395babb542118ae13f6a9a01"
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+GIST_ID = os.environ.get("GIST_ID")
+CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
+CLOUDFLARE_ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
 
 if CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
     cloudflare_llm_client = CloudflareLLM(CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
