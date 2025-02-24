@@ -1,50 +1,32 @@
 from schemas import CloudFlare, Stateless
-
+from pydantic import BaseModel, Field
+from uuid import uuid4
+from typing import Literal, Optional
 
 state = Stateless()
 llm = CloudFlare()
 
 
-# При создании задачи указывается ее имя, id - автоинкремент, status - Открыта (так как только создана)
-class MyTasks:
-    def __init__(self, name):
-        self.__task_id = self.__initial_task_id()
-        self.__task_name = name
-        self.__status = "Открыта"
-        self.solution = llm.send_prompt(name)
+class MyTasks(BaseModel):
+    task_id: str = Field(default_factory=lambda: uuid4().hex)
+    task_name: str = Field(default="Новая задача")
+    status: Literal["Открыта", "В работе", "Закрыта"] = Field(default="Открыта")
+    solution: str = Field(default="Нет ответа")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.solution = llm.send_prompt(self.task_name)
 
     @property
-    def task_id(self):
-        return self.__task_id
+    def solution_prop(self):
+        return self.solution
 
-    @property
-    def task_name(self):
-        return self.__task_name
-
-    @task_name.setter
-    def task_name(self, name):
-        if name:
-            self.__task_name = name
-
-    @property
-    def status(self):
-        return self.__status
-
-    @status.setter
-    def status(self, status):
-        self.__status = status
-
-    @property
-    def solution(self):
-        return self.__solution
-
-    @solution.setter
-    def solution(self, text):
-        if "error" in text:
-            print(text)
-            self.__solution = "-"
-        else:
-            self.__solution = text
+    @solution_prop.setter
+    def solution_prop(self, text):
+        try:
+            self.solution = text
+        except Exception as e:
+            print(e)
 
     @property
     def info(self):
@@ -55,9 +37,13 @@ class MyTasks:
             "solution": self.solution,
         }
 
-    # функция для автоматической записи id задачи (id не повторяющийся)
-    def __initial_task_id(self):
-        if not (tasks := state.get_state()):
-            return 1
+class TaskCreate(BaseModel):
+    name: str = Field(..., description="Название задачи")
 
-        return tasks[-1].get("id") + 1
+
+# Модель для обновления задачи (name и status)
+class TaskUpdate(BaseModel):
+    name: Optional[str] = Field(None, description="Новое название задачи")
+    status: Optional[Literal["Открыта", "В работе", "Закрыта"]] = Field(
+        None, description="Новый статус задачи"
+    )

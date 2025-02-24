@@ -1,47 +1,57 @@
-from fastapi import FastAPI, Body
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException
 from utils import get, post, put, delete
+from pydantic import BaseModel
+from models import TaskCreate, TaskUpdate
 
 app = FastAPI()
 
 
 @app.get("/tasks")
 def get_tasks():
-    tasks = get()
-    if "error" in tasks:
-        return JSONResponse(status_code=500, content={"message": tasks["error"]})
-    return {"message": tasks}
+    try:
+        tasks = get()
+        return tasks
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/tasks")
-def create_task(data=Body()):
-    if not data.get("name"):
-        return JSONResponse(
-            status_code=400, content={"message": "Неверный формат данных"}
-        )
+def create_task(data: TaskCreate):
+    if not data.name:
+        return HTTPException(status_code=400, detail="Неверный формат данных")
+    try:
+        task = post(data.name)
+        return task
 
-    task = post(data["name"])
-    if "error" in task:
-        return JSONResponse(status_code=500, content={"message": task["error"]})
-    return {"message": "Задача добавлена", "response": task}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int, data=Body()):
-    if not data.get("name") and not data.get("status"):
-        return JSONResponse(
-            status_code=400, content={"message": "Неверный формат данных"}
-        )
+def update_task(task_id: str, data: TaskUpdate):
+    if not data.name and not data.status:
+        return HTTPException(status_code=400, detail="Неверный формат данных")
+    try:
+        task = put(task_id, data.name, data.status)
+        return task
 
-    task = put(task_id, data.get("name"), data.get("status"))
-    if "error" in task:
-        return JSONResponse(status_code=500, content={"message": task["error"]})
-    return {"message": "Задача была обновлена", "response": task}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    task = delete(task_id)
-    if "error" in task:
-        return JSONResponse(status_code=500, content={"message": task["error"]})
-    return {"message": "Задача была удалена", "response": task}
+def delete_task(task_id: str):
+    try:
+        task = delete(task_id)
+        return task
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

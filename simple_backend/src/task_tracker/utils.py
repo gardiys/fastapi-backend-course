@@ -1,60 +1,63 @@
 from models import MyTasks
 from schemas import Stateless
-
+from fastapi import HTTPException
 
 state = Stateless()
 
 
 def post(task_name):
-    task = MyTasks(task_name)
+    try:
+        task = MyTasks(task_name=task_name)
 
-    tasks = state.get_state()
-    if "error" in tasks:
-        return tasks
+        tasks = state.get_state()
+        tasks.append(task.info)
+        state.update_state(tasks)
 
-    tasks.append(task.info)
-
-    if state.update_state(tasks):
         return task.info
-    else:
-        return {"error": "Не удалось обновить состояние"}
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def get():
-    tasks = state.get_state()
-    return tasks
+    try:
+        return state.get_state()
+    except HTTPException as e:
+        raise e
 
 
 def put(task_id, name=None, status=None):
-    tasks = state.get_state()
-    if "error" in tasks:
-        return tasks
+    try:
+        tasks = state.get_state()
 
-    for task in tasks:
-        if task.get("id") == task_id:
-            task["name"] = name or task.get("name")
-            task["status"] = status or task.get("status")
+        for task in tasks:
+            if task.get("id") == task_id:
+                task["name"] = name or task.get("name")
+                task["status"] = status or task.get("status")
 
-            if state.update_state(tasks):
+                state.update_state(tasks)
                 return task
 
-            return {"error": "Не удалось обновить состояние"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return {"error": "Задача не найдена"}
 
+def delete(task_id: str):
+    try:
+        tasks = state.get_state()
 
-def delete(task_id: int):
-    tasks = state.get_state()
-    if "error" in tasks:
-        return tasks
+        for task in tasks:
+            if task.get("id") == task_id:
+                tasks.remove(task)
 
-    for task in tasks:
-        if task.get("id") == task_id:
-            tasks.remove(task)
-
-            if state.update_state(tasks):
+                state.update_state(tasks)
                 return task
 
-            return {"error": "Не удалось обновить состояние"}
-
-    return {"error": "Задача не найдена"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
