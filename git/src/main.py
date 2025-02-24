@@ -1,7 +1,7 @@
 
 class Order:
     TAX_RATE = 0.08  # 8% налог
-    SERVICE_CHARGE = 0.05  # 5% сервисный сбор
+    SERVICE_CHARGE = 0.05  # 5% сервисный 
 
     def __init__(self, customer):
         self.customer = customer
