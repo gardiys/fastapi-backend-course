@@ -1,80 +1,125 @@
 import requests
 from fastapi import FastAPI, HTTPException
 import json
-import httpx
+from abc import ABC, abstractmethod
 
 app = FastAPI()
 
 
-class CloudflareLLM:
-    def __init__(self, api_token: str, account_id: str):
+class BaseHTTPClient(ABC):
+    @abstractmethod
+    def _get_base_url(self):
+        pass
+
+    def _get_headers(self, additional_headers=None):
+        base_headers = {}
+        if additional_headers:
+            base_headers.update(additional_headers)
+        return base_headers
+
+    def _handle_response(self, response):
+        try:
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            print(f"HTTP error occurred: {e}")
+            raise HTTPException(
+                status_code=response.status_code, detail=f"HTTP error: {e}"
+            )
+        except requests.exceptions.RequestException as e:
+            print(f"Request exception: {e}")
+            raise HTTPException(status_code=500, detail=f"Request exception: {e}")
+        except json.JSONDecodeError:
+            print("JSON decode error: Response is not valid JSON")
+            raise HTTPException(
+                status_code=500, detail="JSON decode error: Invalid JSON response"
+            )
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+    def _get_request(self, url_path, headers=None, params=None):
+        url = f"{self._get_base_url()}{url_path}"
+        request_headers = self._get_headers(headers)
+        try:
+            response = requests.get(url, headers=request_headers, params=params)
+            return self._handle_response(response)
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"GET request failed: {e}")
+            raise HTTPException(status_code=500, detail=f"GET request failed: {e}")
+
+    def _post_request(self, url_path, headers=None, json_data=None):
+        url = f"{self._get_base_url()}{url_path}"
+        request_headers = self._get_headers(headers)
+        try:
+            response = requests.post(url, headers=request_headers, json=json_data)
+            return self._handle_response(response)
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"POST request failed: {e}")
+            raise HTTPException(status_code=500, detail=f"POST request failed: {e}")
+
+    def _patch_request(self, url_path, headers=None, json_data=None):
+        url = f"{self._get_base_url()}{url_path}"
+        request_headers = self._get_headers(headers)
+        try:
+            response = requests.patch(url, headers=request_headers, json=json_data)
+            return self._handle_response(response)
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"PATCH request failed: {e}")
+            raise HTTPException(status_code=500, detail=f"PATCH request failed: {e}")
+
+
+class CloudflareLLM(BaseHTTPClient):
+    def __init__(self, api_token, account_id):
         self.api_token = api_token
         self.account_id = account_id
-        self.api_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/@cf/meta/llama-2-7b-chat-int8"
 
-    def get_llm_explanation(self, task_text: str) -> str:
+    def _get_base_url(self):
+        return f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/@cf/meta/llama-2-7b-chat-int8"
+
+    def _get_headers(self, additional_headers=None):
         headers = {
             "Authorization": f"Bearer {self.api_token}",
             "Content-Type": "application/json",
         }
+        return super()._get_headers(headers)
+
+    def get_llm_explanation(self, task_text):
         data = {
             "prompt": f"Explain how to solve the following task: {task_text}. Provide a brief description of the solution."
         }
         try:
-            response = httpx.post(
-                self.api_url, headers=headers, json=data, timeout=10
-            )  # Added timeout
-            response.raise_for_status()
-            return (
-                response.json()
-                .get("result", {})
-                .get("response", "Failed to get an explanation from LLM.")
+            response_data = self._post_request("", headers=None, json_data=data)
+            return response_data.get("result", {}).get(
+                "response", "Failed to get an explanation from LLM."
             )
-        except httpx.HTTPError as e:
-            print(f"HTTP error occurred: {e}")
-            return f"Error when requesting LLM: {e}"
-        except httpx.TimeoutException as e:
-            print(f"Timeout error occurred: {e}")
-            return "Request to LLM timed out."
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-            return f"Unexpected error when working with LLM: {e}"
+        except HTTPException as e:
+            return f"Error when requesting LLM: {e.detail}"
 
 
-TASK_FILE = "tasks.json"
-GITHUB_TOKEN = "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"
-GIST_ID = "4cb4c4dd361a063120e71e46825c415e"
-CLOUDFLARE_API_TOKEN = "pwVCFw2m7Vs39_YNDeSNExGcDqZVKOz0CePfBMe3"
-CLOUDFLARE_ACCOUNT_ID = "0260be9c395babb542118ae13f6a9a01"
-
-if CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
-    cloudflare_llm_client = CloudflareLLM(CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
-else:
-    cloudflare_llm_client = None
-
-
-class Task:
-    def __init__(self, id, title, status="To Do", description=""):
-        self.id = id
-        self.title = title
-        self.status = status
-        self.description = description
-
-
-class TaskFileManager:
+class TaskFileManager(BaseHTTPClient):
     def __init__(self, gist_id, github_token):
         self.gist_id = gist_id
         self.github_token = github_token
         self.tasks = self._load_tasks()
         self.task_id_counter = self._get_next_task_id()
 
-    def _load_tasks(self):
+    def _get_base_url(self):
+        return f"https://api.github.com/gists/{self.gist_id}"
+
+    def _get_headers(self, additional_headers=None):
         headers = {"Authorization": f"token {self.github_token}"}
-        gist_url = f"https://api.github.com/gists/{self.gist_id}"
+        return super()._get_headers(headers)
+
+    def _load_tasks(self):
         try:
-            response = requests.get(gist_url, headers=headers)
-            response.raise_for_status()
-            gist_data = response.json()
+            gist_data = self._get_request("", headers=None)
             tasks_file = gist_data["files"].get("tasks.json")
             if tasks_file and tasks_file["content"]:
                 tasks_data = json.loads(tasks_file["content"])
@@ -91,12 +136,10 @@ class TaskFileManager:
                     max_id = max(max_id, task.id)
                 return tasks
             return []
-        except requests.exceptions.RequestException:
+        except HTTPException:
             return []
 
     def _save_tasks(self):
-        headers = {"Authorization": f"token {self.github_token}"}
-        gist_url = f"https://api.github.com/gists/{self.gist_id}"
         tasks_list_for_json = [
             {
                 "id": task.id,
@@ -112,9 +155,8 @@ class TaskFileManager:
             }
         }
         try:
-            response = requests.patch(gist_url, headers=headers, json=payload)
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
+            self._patch_request("", headers=None, json_data=payload)
+        except HTTPException:
             pass
 
     def _get_next_task_id(self):
@@ -156,9 +198,7 @@ class TaskFileManager:
     def update_task(self, task_id, task_data):
         for task in self.tasks:
             if task.id == task_id:
-                original_description = (
-                    task.description
-                )  # Сохраняем оригинальное описание
+                original_description = task.description
                 if "title" in task_data:
                     task.title = task_data["title"]
                     if cloudflare_llm_client:
@@ -169,20 +209,14 @@ class TaskFileManager:
                             task.description = (
                                 f"**Problem Solving Tip from LLM:**\n{llm_explanation}"
                             )
-                            if (
-                                original_description
-                            ):  # Если оригинальное описание существовало, добавляем его
+                            if original_description:
                                 task.description += f"\n\n**Original Description:**\n{original_description}"
 
                 if "status" in task_data:
                     task.status = task_data["status"]
                 if "description" in task_data and "title" not in task_data:
-                    task.description = task_data[
-                        "description"
-                    ]  # Обновляем описание только если title не менялся в запросе
-                elif (
-                    "description" in task_data and "title" in task_data
-                ):  # Если description передан вместе с title, добавляем его к LLM описанию
+                    task.description = task_data["description"]
+                elif "description" in task_data and "title" in task_data:
                     if task.description:
                         task.description += f"\n\n**User Provided Description:**\n{task_data['description']}"
                     else:
@@ -203,6 +237,26 @@ class TaskFileManager:
         return {"message": "Task deleted"}
 
 
+TASK_FILE = "tasks.json"
+GITHUB_TOKEN = "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"
+GIST_ID = "4cb4c4dd361a063120e71e46825c415e"
+CLOUDFLARE_API_TOKEN = "pwVCFw2m7Vs39_YNDeSNExGcDqZVKOz0CePfBMe3"
+CLOUDFLARE_ACCOUNT_ID = "0260be9c395babb542118ae13f6a9a01"
+
+if CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
+    cloudflare_llm_client = CloudflareLLM(CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
+else:
+    cloudflare_llm_client = None
+
+
+class Task:
+    def __init__(self, id, title, status="To Do", description=""):
+        self.id = id
+        self.title = title
+        self.status = status
+        self.description = description
+
+
 task_file_manager = TaskFileManager(GIST_ID, GITHUB_TOKEN)
 
 
@@ -217,7 +271,7 @@ async def create_task(task_data: dict):
 
 
 @app.put("/tasks/{task_id}")
-async def update_task(task_id: int, task_data: dict):
+async def update_task(task_id, task_data: dict):
     return task_file_manager.update_task(task_id, task_data)
 
 
