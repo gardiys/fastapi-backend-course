@@ -1,0 +1,24 @@
+name: CI - Ruff Linter
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получение кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Установка Ruff
+        run: pip install ruff
+
+      - name: Проверка кода Ruff'ом
+        run: ruff check git/src
