@@ -1,4 +1,3 @@
-
 class GroupOrder("Order"):
     def __init__(self, customers):
         super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
@@ -14,6 +13,7 @@ class GroupOrder("Order"):
         customer_list = ", ".join([customer.name for customer in self.customers])
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
+
 
 class Order:
     TAX_RATE = 0.08  # 8% налог
@@ -68,7 +68,8 @@ class GroupOrder(Order):
         customer_list = ", ".join([customer.name for customer in self.customers])
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
-    
+
+
 class Dish:
     def __init__(self, name, price, category):
         self.name = name
@@ -91,6 +92,7 @@ class Customer:
 
     def __str__(self):
         return f"Customer: {self.name}, Membership: {self.membership}"
+
 
 # Пример использования
 
