@@ -1,5 +1,5 @@
-import json
-import os
+# task_manager.py
+from base_http_client import BaseHTTPClient
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -7,55 +7,49 @@ class Task(BaseModel):
     id: int
     title: str
     status: str
+    solution: str = ""
 
-class TaskManager:
-    def __init__(self, filename: str = "tasks.json"):
-        self.filename = filename
-        self.tasks: List[Task] = self._load_tasks()
-        self.next_id = max([task.id for task in self.tasks], default=0) + 1
+class TaskManager(BaseHTTPClient):
+    def __init__(self, api_url: str = "https://67bed564b2320ee050118dfc.mockapi.io/tasks"):
+        super().__init__()
+        self.api_url = api_url
 
-    def _load_tasks(self) -> List[Task]:
-        try:
-            if os.path.exists(self.filename):
-                with open(self.filename, 'r') as f:
-                    data = json.load(f)
-                    return [Task(**task) for task in data]
-            return []
-        except json.JSONDecodeError:
-            print(f"Error decoding {self.filename}, starting with empty list")
-            return []
-        except Exception as e:
-            print(f"Unexpected error loading tasks: {e}")
-            return []
+    async def perform_action(self, action: str, task_id: int = None, data: dict = None) -> Optional[dict]:
+        url = f"{self.api_url}/{task_id}" if task_id else self.api_url
+        method = {
+            "get_all": "GET",
+            "create": "POST",
+            "update": "PUT",
+            "delete": "DELETE"
+        }.get(action, "GET")
+        
+        if action == "get_all":
+            result = await self._make_request(method, self.api_url)
+            return result if result else []
+        elif action in ["create", "update"]:
+            result = await self._make_request(method, url, data=data)
+            return result
+        elif action == "delete":
+            await self._make_request(method, url)
+            return None
 
-    def _save_tasks(self):
-        try:
-            with open(self.filename, 'w') as f:
-                json.dump([task.dict() for task in self.tasks], f)
-        except Exception as e:
-            print(f"Error saving tasks: {e}")
+    async def get_all(self) -> List[Task]:
+        tasks = await self.perform_action("get_all")
+        return [Task(**task) for task in tasks]
 
-    def get_all(self) -> List[Task]:
-        return self.tasks
+    async def create(self, title: str, status: str = "todo", solution: str = "") -> Optional[Task]:
+        data = {"title": title, "status": status, "solution": solution}
+        result = await self.perform_action("create", data=data)
+        return Task(**result) if result else None
 
-    def create(self, title: str, status: str = "todo") -> Task:
-        task = Task(id=self.next_id, title=title, status=status)
-        self.tasks.append(task)
-        self.next_id += 1
-        self._save_tasks()
-        return task
+    async def update(self, task_id: int, title: Optional[str] = None, status: Optional[str] = None, solution: Optional[str] = None) -> Optional[Task]:
+        task = await self.perform_action("get_all")
+        task = next((t for t in task if t["id"] == task_id), None)
+        if not task:
+            return None
+        data = {"title": title or task["title"], "status": status or task["status"], "solution": solution or task["solution"]}
+        result = await self.perform_action("update", task_id, data)
+        return Task(**result) if result else None
 
-    def update(self, task_id: int, title: Optional[str] = None, status: Optional[str] = None) -> Optional[Task]:
-        for task in self.tasks:
-            if task.id == task_id:
-                if title is not None:
-                    task.title = title
-                if status is not None:
-                    task.status = status
-                self._save_tasks()
-                return task
-        return None
-
-    def delete(self, task_id: int):
-        self.tasks = [task for task in self.tasks if task.id != task_id]
-        self._save_tasks()
+    async def delete(self, task_id: int):
+        await self.perform_action("delete", task_id)
