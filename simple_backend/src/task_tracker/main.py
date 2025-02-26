@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
 from typing import List
+from task_manager import TaskManager, Task
 
 app = FastAPI()
 API_URL = "https://67bed564b2320ee050118dfc.mockapi.io/tasks"

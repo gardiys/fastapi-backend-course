@@ -15,15 +15,25 @@ class TaskManager:
         self.next_id = max([task.id for task in self.tasks], default=0) + 1
 
     def _load_tasks(self) -> List[Task]:
-        if os.path.exists(self.filename):
-            with open(self.filename, 'r') as f:
-                data = json.load(f)
-                return [Task(**task) for task in data]
-        return []
+        try:
+            if os.path.exists(self.filename):
+                with open(self.filename, 'r') as f:
+                    data = json.load(f)
+                    return [Task(**task) for task in data]
+            return []
+        except json.JSONDecodeError:
+            print(f"Error decoding {self.filename}, starting with empty list")
+            return []
+        except Exception as e:
+            print(f"Unexpected error loading tasks: {e}")
+            return []
 
     def _save_tasks(self):
-        with open(self.filename, 'w') as f:
-            json.dump([task.dict() for task in self.tasks], f)
+        try:
+            with open(self.filename, 'w') as f:
+                json.dump([task.dict() for task in self.tasks], f)
+        except Exception as e:
+            print(f"Error saving tasks: {e}")
 
     def get_all(self) -> List[Task]:
         return self.tasks
