@@ -1,4 +1,3 @@
-
 class Order:
     TAX_RATE = 0.08  # 8% налог
     SERVICE_CHARGE = 0.05  # 5% сервисный сбор
@@ -24,6 +23,11 @@ class Order:
 
 
     def final_total(self):
+        if self.customer is None:
+            for customer in self.customers:
+                self.customer = customer
+                if customer.membership == "VIP":
+                    break
         total_after_discount = self.apply_discount()
         total_with_tax = total_after_discount * (1 + Order.TAX_RATE)
         final_total = total_with_tax * (1 + Order.SERVICE_CHARGE)
@@ -53,7 +57,8 @@ class GroupOrder(Order):
         customer_list = ", ".join([customer.name for customer in self.customers])
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
-  
+
+
 class Dish:
     def __init__(self, name, price, category):
         self.name = name
@@ -62,6 +67,7 @@ class Dish:
 
     def __str__(self):
         return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
+
 
 class Customer:
     def __init__(self, name, membership="Regular"):
@@ -75,6 +81,7 @@ class Customer:
 
     def __str__(self):
         return f"Customer: {self.name}, Membership: {self.membership}"
+
 # Пример использования
 
 # Создаем блюда
