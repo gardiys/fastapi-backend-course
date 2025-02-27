@@ -1,104 +1,130 @@
+import json
+import os
 
-class Order:
-    TAX_RATE = 0.08  # 8% налог
-    SERVICE_CHARGE = 0.05  # 5% сервисный сбор
+def load_books(filename='library.json'):
+    """
+    Загрузка списка книг из JSON-файла.
+    Возвращает список книг (каждая книга - это словарь).
+    """
+    if not os.path.isfile(filename):
+        return []
+    with open(filename, 'r', encoding='utf-8') as file:
+        try:
+            return json.load(file)
+        except json.JSONDecodeError:
+            return []
 
-    def __init__(self, customer):
-        self.customer = customer
-        self.dishes = []
-    
-    def add_dish(self, dish):
-        if isinstance(dish, Dish):
-            self.dishes.append(dish)
+def save_books(books, filename='library.json'):
+    """
+    Сохранение списка книг в JSON-файл.
+    """
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump(books, file, ensure_ascii=False, indent=4)
+
+def list_books(books):
+    """
+    Возвращает строку со списком всех книг.
+    """
+    if not books:
+        return "Библиотека пуста."
+    result_lines = []
+    for idx, book in enumerate(books, start=1):
+        result_lines.append(f"{idx}. {book['title']} | {book['author']} | {book['year']}")
+    return "\n".join(result_lines)
+
+def add_book(books, title, author, year):
+    """
+    Принимает текущий список книг и данные о новой книге.
+    Возвращает новый список, в котором добавлена новая книга.
+    """
+    new_book = {
+        'title': title,
+        'author': author,
+        'year': year
+    }
+    # Создаём НОВЫЙ список, добавляя new_book
+    return books + [new_book]
+
+def remove_book(books, title):
+    """
+    Принимает текущий список книг и название книги для удаления.
+    Возвращает новый список без книги, у которой совпадает название.
+    """
+    # Фильтруем список: оставляем только те книги, у которых название не совпадает с переданным
+    return [book for book in books if book['title'].lower() != title.lower()]
+
+def search_books(books, keyword):
+    """
+    Поиск книг по ключевому слову (ищется в названии и авторе).
+    Возвращает отфильтрованный список.
+    """
+    keyword_lower = keyword.lower()
+    return [
+        book for book in books
+        if keyword_lower in book['title'].lower() or keyword_lower in book['author'].lower()
+    ]
+
+def main():
+    """
+    Точка входа в программу: здесь мы загружаем книги, 
+    показываем меню и обрабатываем ввод пользователя.
+    """
+    books = load_books()  # Загрузили список книг из JSON
+
+    while True:
+        print("\n=== Управление онлайн-библиотекой ===")
+        print("1. Показать все книги")
+        print("2. Добавить книгу")
+        print("3. Удалить книгу")
+        print("4. Поиск книг")
+        print("5. Выйти")
+
+        choice = input("Выберите действие (1-5): ").strip()
+
+        if choice == '1':
+            print("\nСписок книг:")
+            print(list_books(books))
+
+        elif choice == '2':
+            print("\nДобавление новой книги:")
+            title = input("Введите название: ").strip()
+            author = input("Введите автора: ").strip()
+            year = input("Введите год издания: ").strip()
+
+            # Получаем новый список с добавленной книгой
+            new_books = add_book(books, title, author, year)
+            books = new_books  # Обновляем переменную, чтобы сохранить изменения
+            save_books(books)  # Сразу сохраняем в файл
+            print("Книга добавлена!")
+
+        elif choice == '3':
+            print("\nУдаление книги:")
+            title_to_remove = input("Введите название книги, которую хотите удалить: ").strip()
+
+            new_books = remove_book(books, title_to_remove)
+            if len(new_books) < len(books):
+                books = new_books
+                save_books(books)
+                print("Книга удалена!")
+            else:
+                print("Книга с таким названием не найдена.")
+
+        elif choice == '4':
+            print("\nПоиск книг:")
+            keyword = input("Введите ключевое слово для поиска (в названии или авторе): ").strip()
+            found_books = search_books(books, keyword)
+            if found_books:
+                print("\nНайденные книги:")
+                print(list_books(found_books))
+            else:
+                print("Ничего не найдено.")
+
+        elif choice == '5':
+            print("Выход из программы.")
+            break
+
         else:
-            raise ValueError("Можно добавлять только объекты класса Dish.")
-    
-    def remove_dish(self, dish):
-        if dish in self.dishes:
-            self.dishes.remove(dish)
-        else:
-            raise ValueError("Такого блюда нет в заказе.")
+            print("Некорректный ввод. Попробуйте ещё раз.")
 
-    def calculate_total(self):
-        return sum(dish.price for dish in self.dishes)
-
-
-    def final_total(self):
-        total_after_discount = self.apply_discount()
-        total_with_tax = total_after_discount * (1 + Order.TAX_RATE)
-        final_total = total_with_tax * (1 + Order.SERVICE_CHARGE)
-        return final_total
-
-    def apply_discount(self):
-        discount_rate = self.customer.get_discount() / 100
-        return self.calculate_total() * (1 - discount_rate)
-
-    def __str__(self):
-        dish_list = "\n".join([str(dish) for dish in self.dishes])
-        return f"Order for {self.customer.name}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
-
-
-class GroupOrder(Order):
-    def __init__(self, customers):
-        super().__init__(customer=None)  # Групповой заказ не привязан к одному клиенту
-        self.customers = customers
-
-    def split_bill(self):
-        if not self.customers:
-            raise ValueError("Нет клиентов для разделения счета.")
-        total = self.final_total()
-        return total / len(self.customers)
-
-    def __str__(self):
-        customer_list = ", ".join([customer.name for customer in self.customers])
-        dish_list = "\n".join([str(dish) for dish in self.dishes])
-        return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
-  
-class Dish:
-    def __init__(self, name, price, category):
-        self.name = name
-        self.price = price
-        self.category = category
-
-    def __str__(self):
-        return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
-
-class Customer:
-    def __init__(self, name, membership="Regular"):
-        self.name = name
-        self.membership = membership
-
-    def get_discount(self):
-        if self.membership == "VIP":
-            return 10  # VIP клиенты получают 10% скидки
-        return 0  # Обычные клиенты не получают скидки
-
-    def __str__(self):
-        return f"Customer: {self.name}, Membership: {self.membership}"
-# Пример использования
-
-# Создаем блюда
-pizza = Dish("Pizza", 12, "Main Course")
-ice_cream = Dish("Ice Cream", 5, "Dessert")
-coffee = Dish("Coffee", 3, "Drink")
-
-# Создаем клиентов
-regular_customer = Customer("Alice", "Regular")
-vip_customer = Customer("Bob", "VIP")
-
-# Индивидуальный заказ
-order1 = Order(regular_customer)
-order1.add_dish(pizza)
-order1.add_dish(ice_cream)
-
-print(order1)  # Вывод информации о заказе
-print(f"Final Total: ${order1.final_total():.2f}")  # Итоговая стоимость
-
-# Групповой заказ
-group_order = GroupOrder([regular_customer, vip_customer])
-group_order.add_dish(pizza)
-group_order.add_dish(ice_cream)
-group_order.add_dish(coffee)
-
-print(group_order)  # Вывод информации о групповом заказе
-print(f"Split Bill: ${group_order.split_bill():.2f} per person")  # Стоимость на каждого
+if __name__ == "__main__":
+    main()
