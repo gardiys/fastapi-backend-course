@@ -4,13 +4,15 @@ from typing import List, Optional
 import requests
 import os
 from abc import ABC, abstractmethod
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 app = FastAPI()
 
 # Конфигурация API
 MOCKAPI_BASE_URL = "https://67b85410699a8a7baef39d0f.mockapi.io/api/v1/tasks/Tasks"
 CLOUDFLARE_API_URL = "https://api.cloudflare.com/client/v4/accounts/c0444b3d36c2cc03c46a304589a12f35/ai/run/@cf/meta/llama-2-7b-chat-int8"
-CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN", "jZJcMYYtMOA64hhmUduk1axSYGhO-YqNbJX1vCmG")
+CLOUDFLARE_API_TOKEN = "jZJcMYYtMOA64hhmUduk1axSYGhO-YqNbJX1vCmG"
+# os.getenv("CLOUDFLARE_API_TOKEN") не подцепляет переменную
 
 
 # Абстрактный класс для HTTP-клиента
@@ -106,7 +108,7 @@ class CloudflareLLMClient(BaseHTTPClient):
         raise NotImplementedError("DELETE не используется в Cloudflare LLM API")
 
     def get_llm_response(self, prompt: str) -> str:
-        """Отправляет запрос в LLM и получает ответ."""
+        """Отправляет запрос к LLM и возвращает ответ с повторными попытками в случае ошибки."""
         data = {
             "messages": [
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -117,9 +119,10 @@ class CloudflareLLMClient(BaseHTTPClient):
             response = self.post("", data)
             return response.get("result", {}).get("response", "No response from LLM")
         except HTTPException as e:
-            if e.status_code == 401:
-                raise HTTPException(status_code=401, detail="Unauthorized: Check your API token or permissions")
-            raise
+            if e.status_code in [500, 502, 503, 504]:  # Повторяем только при серверных ошибках
+                print(f"Server error {e.status_code}, retrying...")
+                raise e
+            raise  # Пробрасываем остальные ошибки (401, 403 и т. д.)
 
 
 # Инициализация клиентов
