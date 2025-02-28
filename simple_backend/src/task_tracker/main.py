@@ -1,131 +1,166 @@
-from fastapi import FastAPI, HTTPException, Path, Body 
+from fastapi import FastAPI, HTTPException, Path, Body
 from pydantic import BaseModel
 from typing import List, Optional
 import requests
 import os
+from abc import ABC, abstractmethod
 
 app = FastAPI()
 
-# Конфигурация MockAPI
-MOCKAPI_BASE_URL = "https://67b85410699a8a7baef39d0f.mockapi.io/api/v1/tasks/Tasks"  # Замените на ваш URL
+# Конфигурация API
+MOCKAPI_BASE_URL = "https://67b85410699a8a7baef39d0f.mockapi.io/api/v1/tasks/Tasks"
+CLOUDFLARE_API_URL = "https://api.cloudflare.com/client/v4/accounts/c0444b3d36c2cc03c46a304589a12f35/ai/run/@cf/meta/llama-2-7b-chat-int8"
+CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN", "jZJcMYYtMOA64hhmUduk1axSYGhO-YqNbJX1vCmG")
 
-# Конфигурация Cloudflare Workers AI
-CLOUDFLARE_API_URL = "https://api.cloudflare.com/client/v4/accounts/c0444b3d36c2cc03c46a304589a12f35/ai/run/@cf/meta/llama-2-7b-chat-int8"  # Замените на ваш URL
-CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")  # Токен из переменных окружения
 
-# Pydantic модель для задачи
-class Task(BaseModel):
-    id: Optional[int] = None  # ID может быть None, так как MockAPI генерирует его автоматически
-    title: str
-    description: Optional[str] = None
-    completed: bool = False
+# Абстрактный класс для HTTP-клиента
+class BaseHTTPClient(ABC):
+    def __init__(self, base_url: str):
+        self.base_url = base_url
 
-# Класс для работы с Cloudflare Workers AI
-class CloudflareAI:
+    def request(self, method: str, endpoint: str, data: Optional[dict] = None, headers: Optional[dict] = None):
+        """Универсальный метод для выполнения HTTP-запросов."""
+        url = f"{self.base_url}{endpoint}"
+        response = requests.request(method, url, json=data, headers=headers)
+
+        if response.status_code in [200, 201]:
+            return response.json()
+        elif response.status_code == 404:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        raise HTTPException(status_code=response.status_code, detail=f"Request failed: {response.text}")
+
+    @abstractmethod
+    def get(self, endpoint: str):
+        pass
+
+    @abstractmethod
+    def post(self, endpoint: str, data: dict):
+        pass
+
+    @abstractmethod
+    def put(self, endpoint: str, data: dict):
+        pass
+
+    @abstractmethod
+    def delete(self, endpoint: str):
+        pass
+
+
+# Клиент для работы с MockAPI
+class MockAPIClient(BaseHTTPClient):
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
+
+    def get(self, endpoint: str = ""):
+        return self.request("GET", endpoint)
+
+    def post(self, endpoint: str, data: dict):
+        return self.request("POST", endpoint, data)
+
+    def put(self, endpoint: str, data: dict):
+        return self.request("PUT", endpoint, data)
+
+    def delete(self, endpoint: str):
+        return self.request("DELETE", endpoint)
+
+    def fetch_tasks(self) -> List[dict]:
+        return self.get("")
+
+    def fetch_task(self, task_id: int) -> Optional[dict]:
+        try:
+            return self.get(f"/{task_id}")
+        except HTTPException as e:
+            if e.status_code == 404:
+                return None
+            raise
+
+    def create_task(self, task: dict) -> dict:
+        return self.post("", task)
+
+    def update_task(self, task_id: int, updated_task: dict) -> dict:
+        return self.put(f"/{task_id}", updated_task)
+
+    def delete_task(self, task_id: int) -> dict:
+        return self.delete(f"/{task_id}")
+
+
+# Клиент для работы с Cloudflare Workers AI
+class CloudflareLLMClient(BaseHTTPClient):
     def __init__(self, api_url: str, api_token: str):
-        self.api_url = api_url
-        self.api_token = api_token
-
-    def get_llm_response(self, prompt: str) -> str:
-        """Отправляет запрос к LLM и возвращает ответ."""
-        headers = {
-            "Authorization": f"Bearer {self.api_token}",
+        super().__init__(api_url)
+        self.headers = {
+            "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json",
         }
+
+    def get(self, endpoint: str):
+        raise NotImplementedError("GET не используется в Cloudflare LLM API")
+
+    def post(self, endpoint: str, data: dict):
+        return self.request("POST", endpoint, data, self.headers)
+
+    def put(self, endpoint: str, data: dict):
+        raise NotImplementedError("PUT не используется в Cloudflare LLM API")
+
+    def delete(self, endpoint: str):
+        raise NotImplementedError("DELETE не используется в Cloudflare LLM API")
+
+    def get_llm_response(self, prompt: str) -> str:
+        """Отправляет запрос в LLM и получает ответ."""
         data = {
             "messages": [
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": prompt},
             ]
         }
-        response = requests.post(self.api_url, headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json().get("result", {}).get("response", "No response from LLM")
-        raise HTTPException(status_code=500, detail="Failed to get response from LLM")
+        try:
+            response = self.post("", data)
+            return response.get("result", {}).get("response", "No response from LLM")
+        except HTTPException as e:
+            if e.status_code == 401:
+                raise HTTPException(status_code=401, detail="Unauthorized: Check your API token or permissions")
+            raise
 
-# Инициализация Cloudflare AI
-cloudflare_ai = CloudflareAI(CLOUDFLARE_API_URL, CLOUDFLARE_API_TOKEN)
 
-# Вспомогательные функции для работы с MockAPI
-def fetch_tasks() -> List[dict]:
-    """Получить все задачи из MockAPI."""
-    response = requests.get(MOCKAPI_BASE_URL)
-    if response.status_code == 200:
-        return response.json()
-    raise HTTPException(status_code=500, detail="Failed to fetch tasks from MockAPI")
+# Инициализация клиентов
+mockapi_client = MockAPIClient(MOCKAPI_BASE_URL)
+cloudflare_ai = CloudflareLLMClient(CLOUDFLARE_API_URL, CLOUDFLARE_API_TOKEN)
 
-def fetch_task(task_id: int) -> Optional[dict]:
-    """Получить задачу по ID из MockAPI."""
-    response = requests.get(f"{MOCKAPI_BASE_URL}/{task_id}")
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 404:
-        return None
-    raise HTTPException(status_code=500, detail="Failed to fetch task from MockAPI")
 
-def create_task_in_mockapi(task: Task) -> dict:
-    """Создать задачу в MockAPI."""
-    response = requests.post(MOCKAPI_BASE_URL, json=task.dict())
-    if response.status_code == 201:
-        return response.json()
-    raise HTTPException(status_code=500, detail="Failed to create task in MockAPI")
+# Pydantic модель задачи
+class Task(BaseModel):
+    id: Optional[int] = None
+    title: str
+    description: Optional[str] = None
+    completed: bool = False
 
-def update_task_in_mockapi(task_id: int, updated_task: Task) -> dict:
-    """Обновить задачу в MockAPI."""
-    response = requests.put(f"{MOCKAPI_BASE_URL}/{task_id}", json=updated_task.dict())
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 404:
-        raise HTTPException(status_code=404, detail="Task not found in MockAPI")
-    raise HTTPException(status_code=500, detail="Failed to update task in MockAPI")
-
-def delete_task_in_mockapi(task_id: int) -> dict:
-    """Удалить задачу в MockAPI."""
-    response = requests.delete(f"{MOCKAPI_BASE_URL}/{task_id}")
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 404:
-        raise HTTPException(status_code=404, detail="Task not found in MockAPI")
-    raise HTTPException(status_code=500, detail="Failed to delete task in MockAPI")
 
 # Эндпоинты FastAPI
-
-# GET /tasks - Получить все задачи
 @app.get("/tasks", response_model=List[Task])
 def get_tasks():
-    return fetch_tasks()
+    return mockapi_client.fetch_tasks()
 
-# POST /tasks - Создать новую задачу
+
 @app.post("/tasks", response_model=Task)
 def create_task(task: Task):
-    # Отправляем текст задачи в LLM
     llm_prompt = f"Explain how to solve the task: {task.title}. {task.description or ''}"
     llm_response = cloudflare_ai.get_llm_response(llm_prompt)
+    task.description = f"{task.description or ''}\n\nLLM Suggestion: {llm_response}".strip()
+    return mockapi_client.create_task(task.dict())
 
-    # Добавляем ответ LLM в описание задачи
-    if task.description:
-        task.description += f"\n\nLLM Suggestion: {llm_response}"
-    else:
-        task.description = f"LLM Suggestion: {llm_response}"
 
-    # Создаем задачу в MockAPI
-    return create_task_in_mockapi(task)
-
-# PUT /tasks/{task_id} - Обновить существующую задачу
 @app.put("/tasks/{task_id}", response_model=Task)
 def update_task(
     task_id: int = Path(..., description="ID задачи для обновления"),
     updated_task: Task = Body(..., description="Новые данные задачи"),
 ):
-    # Проверяем, что задача существует
-    if not fetch_task(task_id):
+    if not mockapi_client.fetch_task(task_id):
         raise HTTPException(status_code=404, detail="Task not found")
-    return update_task_in_mockapi(task_id, updated_task)
+    return mockapi_client.update_task(task_id, updated_task.dict())
 
-# DELETE /tasks/{task_id} - Удалить задачу
-@app.delete("/tasks/{task_id}", response_model=Task)
+
+@app.delete("/tasks/{task_id}")
 def delete_task(task_id: int = Path(..., description="ID задачи для удаления")):
-    # Проверяем, что задача существует
-    if not fetch_task(task_id):
+    if not mockapi_client.fetch_task(task_id):
         raise HTTPException(status_code=404, detail="Task not found")
-    return delete_task_in_mockapi(task_id)
+    return mockapi_client.delete_task(task_id)
