@@ -222,20 +222,20 @@ task_file_manager = TaskFileManager(
 
 
 @app.get("/tasks")
-async def get_tasks():
+def get_tasks():
     return task_file_manager.get_tasks()
 
 
 @app.post("/tasks")
-async def create_task(task_data: dict):
+def create_task(task_data: dict):
     return task_file_manager.create_task(task_data)
 
 
 @app.put("/tasks/{task_id}")
-async def update_task(task_id: str, task_data: dict):
+def update_task(task_id: str, task_data: dict):
     return task_file_manager.update_task(task_id, task_data)
 
 
 @app.delete("/tasks/{task_id}")
-async def delete_task(task_id: str):
+def delete_task(task_id: str):
     return task_file_manager.delete_task(task_id)
