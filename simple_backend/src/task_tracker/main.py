@@ -5,6 +5,8 @@ import os
 from abc import ABC, abstractmethod
 from dotenv import load_dotenv
 import uuid
+from pydantic import BaseModel, Field
+from typing import Optional, List
 
 load_dotenv()
 
@@ -96,12 +98,29 @@ class CloudflareLLM(BaseHTTPClient):
             return f"Error when requesting LLM: {e.detail}"
 
 
-class Task:
-    def __init__(self, id, title, status="To Do", description=""):
-        self.id = id
-        self.title = title
-        self.status = status
-        self.description = description
+class TaskCreate(BaseModel):
+    title: str = Field(..., description="Task title")
+    description: Optional[str] = Field(None, description="Task description")
+
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = Field(None, description="Task title")
+    description: Optional[str] = Field(None, description="Task description")
+    status: Optional[str] = Field(None, description="Task status")
+
+
+class TaskResponse(BaseModel):
+    id: str = Field(..., description="Task ID")
+    title: str = Field(..., description="Task title")
+    status: str = Field(..., description="Task status")
+    description: Optional[str] = Field(None, description="Task description")
+
+
+class Task(BaseModel):
+    id: str = Field(..., description="Task ID")
+    title: str = Field(..., description="Task title")
+    status: str = Field("To Do", description="Task status")
+    description: Optional[str] = Field("", description="Task description")
 
 
 class TaskFileManager(BaseHTTPClient):
@@ -111,7 +130,7 @@ class TaskFileManager(BaseHTTPClient):
         self.cloudflare_llm_client = cloudflare_llm_client
         self.tasks = self._load_tasks()
 
-    def _enrich_task_with_llm_explanation(self, task):
+    def _enrich_task_with_llm_explanation(self, task: Task):
         if self.cloudflare_llm_client:
             llm_explanation = self.cloudflare_llm_client.get_llm_explanation(task.title)
             if llm_explanation:
@@ -131,14 +150,19 @@ class TaskFileManager(BaseHTTPClient):
             tasks_file = gist_data["files"].get("tasks.json")
             if tasks_file and tasks_file["content"]:
                 tasks_data = json.loads(tasks_file["content"])
-                tasks = [Task(**task_data) for task_data in tasks_data]
+                tasks = []
+                for task_data in tasks_data:
+                    task_id = task_data.get("id")
+                    if task_id is not None:
+                        task_data["id"] = str(task_id)
+                    tasks.append(Task(**task_data))
                 return tasks
             return []
         except HTTPException:
             raise
 
     def _save_tasks(self):
-        tasks_list_for_json = [self._deserialize_task(task) for task in self.tasks]
+        tasks_list_for_json = [task.dict() for task in self.tasks]
         payload = {
             "files": {
                 "tasks.json": {"content": json.dumps(tasks_list_for_json, indent=4)}
@@ -149,60 +173,54 @@ class TaskFileManager(BaseHTTPClient):
         except HTTPException:
             pass
 
-    def get_tasks(self):
-        return [self._deserialize_task(task) for task in self.tasks]
+    def get_tasks(self) -> List[TaskResponse]:
+        return [TaskResponse(**task.dict()) for task in self.tasks]
 
-    def create_task(self, task_data):
+    def create_task(self, task_data: TaskCreate) -> TaskResponse:
         new_task = Task(
             id=str(uuid.uuid4()),
-            title=task_data["title"],
-            description=task_data.get("description", ""),
+            title=task_data.title,
+            description=task_data.description,
         )
         self._enrich_task_with_llm_explanation(new_task)
         self.tasks.append(new_task)
         self._save_tasks()
-        return self._deserialize_task(new_task)
+        return TaskResponse(**new_task.dict())
 
-    def update_task(self, task_id, task_data):
+    def update_task(self, task_id: str, task_data: TaskUpdate) -> TaskResponse:
         task = next((t for t in self.tasks if t.id == task_id), None)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
 
         updated = False
 
-        if "title" in task_data:
+        if task_data.title is not None:
             self._update_task_title(task, task_data)
             updated = True
-        if "description" in task_data:
+        if task_data.description is not None:
             self._update_task_description(task, task_data)
             updated = True
-        if "status" in task_data:
-            task.status = task_data["status"]
+        if task_data.status is not None:
+            task.status = task_data.status
             updated = True
 
         if updated:
             self._save_tasks()
-            return self._deserialize_task(task)
+            return TaskResponse(**task.dict())
 
-        return self._deserialize_task(task)
+        return TaskResponse(**task.dict())
 
-    def _update_task_title(self, task, task_data):
-        task.title = task_data["title"]
+    def _update_task_title(self, task: Task, task_data: TaskUpdate):
+        if task_data.title:
+            task.title = task_data.title
         task.description = ""
         self._enrich_task_with_llm_explanation(task)
 
-    def _update_task_description(self, task, task_data):
-        task.description = task_data["description"]
+    def _update_task_description(self, task: Task, task_data: TaskUpdate):
+        if task_data.description:
+            task.description = task_data.description
 
-    def _deserialize_task(self, task):
-        return {
-            "id": task.id,
-            "title": task.title,
-            "status": task.status,
-            "description": task.description,
-        }
-
-    def delete_task(self, task_id):
+    def delete_task(self, task_id: str):
         self.tasks = [task for task in self.tasks if task.id != str(task_id)]
         self._save_tasks()
         return {"message": "Task deleted"}
@@ -221,18 +239,18 @@ task_file_manager = TaskFileManager(
 )
 
 
-@app.get("/tasks")
+@app.get("/tasks", response_model=List[TaskResponse])
 def get_tasks():
     return task_file_manager.get_tasks()
 
 
-@app.post("/tasks")
-def create_task(task_data: dict):
+@app.post("/tasks", response_model=TaskResponse)
+def create_task(task_data: TaskCreate):
     return task_file_manager.create_task(task_data)
 
 
-@app.put("/tasks/{task_id}")
-def update_task(task_id: str, task_data: dict):
+@app.put("/tasks/{task_id}", response_model=TaskResponse)
+def update_task(task_id: str, task_data: TaskUpdate):
     return task_file_manager.update_task(task_id, task_data)
 
 
