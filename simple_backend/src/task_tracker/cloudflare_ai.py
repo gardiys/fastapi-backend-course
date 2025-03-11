@@ -4,16 +4,29 @@ from base_http_client import BaseHTTPClient
 
 load_dotenv()
 
+if not all(
+    [
+        os.getenv("CLOUDFLARE_API_TOKEN"),
+        os.getenv("CLOUDFLARE_ACCOUNT_ID"),
+        os.getenv("CLOUDFLARE_MODEL"),
+    ]
+):
+    raise ValueError("❌ Ошибка: Отсутствуют переменные окружения в .env!")
+
 
 class CloudflareAI(BaseHTTPClient):
     """Клиент для работы с Cloudflare AI."""
 
-    API_URL = "https://api.cloudflare.com/client/v4/accounts/f5f4fb2fbdb07976b38adace2e41cc98/ai/run/@cf/meta/llama-3-8b-instruct"
-
     def __init__(self):
-        self.api_key = os.getenv("CLOUDFLARE_AI_KEY")
-        if not self.api_key:
-            raise ValueError("API-ключ Cloudflare AI не найден! Проверь .env файл.")
+        super().__init__()
+        self.api_key = os.getenv("CLOUDFLARE_API_TOKEN")
+        account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+        model_name = os.getenv("CLOUDFLARE_MODEL")
+
+        if not self.api_key or not account_id or not model_name:
+            raise ValueError("❌ Ошибка: Отсутствуют переменные окружения в .env!")
+
+        self.api_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/@cf/meta/{model_name}"
 
     def get_headers(self) -> dict:
         """Возвращает заголовки запроса."""
@@ -37,9 +50,14 @@ class CloudflareAI(BaseHTTPClient):
             ],
             "temperature": 0.7,
         }
-        response = self.request("POST", self.API_URL, payload)
-        return (
-            response.get("result", {})
-            .get("response", "Ошибка генерации ответа")
-            .strip()
-        )
+
+        try:
+            response = self.request("POST", self.api_url, payload)
+            return (
+                response.get("result", {})
+                .get("response", "❌ Ошибка генерации ответа")
+                .strip()
+            )
+        except Exception as e:
+            print(f"❌ Ошибка запроса к Cloudflare AI: {e}")
+            return "❌ Ошибка: Невозможно получить ответ от Cloudflare AI."

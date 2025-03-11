@@ -6,14 +6,17 @@ load_dotenv()
 
 
 class JSONBinClient(BaseHTTPClient):
-    """Клиент для работы с JSONBin.io"""
-
-    API_URL = "https://api.jsonbin.io/v3/b/67cb2c8ce41b4d34e4a280c7"
+    """Клиент для работы с JSONBin.io."""
 
     def __init__(self):
+        super().__init__()
         self.api_key = os.getenv("JSONBIN_API_KEY")
-        if not self.api_key:
-            raise ValueError("API-ключ JSONBin.io не найден! Проверь .env файл.")
+        bin_id = os.getenv("JSONBIN_BIN_ID")
+
+        if not all([self.api_key, bin_id]):
+            raise ValueError("❌ Ошибка: Отсутствуют переменные окружения в .env!")
+
+        self.api_url = f"https://api.jsonbin.io/v3/b/{bin_id}"
 
     def get_headers(self) -> dict:
         """Возвращает заголовки запроса."""
@@ -24,9 +27,9 @@ class JSONBinClient(BaseHTTPClient):
 
     def load_tasks(self):
         """Загружает задачи из JSONBin.io."""
-        response = self.request("GET", self.API_URL)
-        return response.get("record", {}).get("record", [])
+        response = self.request("GET", self.api_url)
+        return response.get("record", [])
 
     def save_tasks(self, tasks):
         """Сохраняет задачи в JSONBin.io."""
-        self.request("PUT", self.API_URL, {"record": tasks})
+        self.request("PUT", self.api_url, {"record": tasks})
