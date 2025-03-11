@@ -1,0 +1,17 @@
+import json
+from typing import List
+
+class TaskStorage:
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def load_tasks(self) -> List[Task]:
+        try:
+            with open(self.file_path, "r") as file:
+                return [Task(**task) for task in json.load(file)]
+        except FileNotFoundError:
+            return []
+
+    def save_tasks(self, tasks: List[Task]):
+        with open(self.file_path, "w") as file:
+            json.dump([task.dict() for task in tasks], file, indent=4)
