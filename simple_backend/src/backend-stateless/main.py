@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Body
 import requests
 
+from config import Configs
+
 
 class DataBase:
-    __x_master_key = "$2a$10$IMh3f/dBpBNNOcK6OQMhJ.ZdcQWlXuR66nyHse7Jhto3MCUka62vm"
+    __x_master_key = Configs.get_secret
     __url = "https://api.jsonbin.io/v3/b/67ac93dfacd3cb34a8df05f9"
     __headers = {
         "Content-Type": "application/json",
