@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body
 import requests
 
-from simple_backend.src.task_tracker.backend.config import Configs
+from backend.config import Configs
 
 
 class DataBase:
