@@ -130,7 +130,7 @@ def main():
             else:
                 print("Ничего не найдено.")
 
-        elif choice == "5":
+        elif choice == "6":
             print("Выход из программы.")
             break
 
