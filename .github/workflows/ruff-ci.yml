@@ -1,0 +1,32 @@
+name: Ruff Linting
+
+on:               # запускать при:
+  push:
+    branches:
+      - main      # push в ветку main
+  pull_request:
+    branches:
+      - main      # pull request в ветку main
+
+jobs:             # что делаем:
+  lint:
+    runs-on: ubuntu-latest  # Использовать последнюю версию Ubuntu
+
+    steps:
+      # Клонируем репозиторий
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Установить Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Установить Ruff
+      - name: Install Ruff
+        run: pip install ruff
+
+      # Запустить Ruff
+      - name: Run Ruff
+        run: ruff check .
