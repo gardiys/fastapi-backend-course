@@ -111,7 +111,7 @@ def main():
             ).strip()
 
             new_books = remove_book(books, title_to_remove)
-            if len(new_books) > len(books):
+            if len(new_books) < len(books):
                 books = new_books
                 saving_books(books)
                 print("Книга удалена!")
