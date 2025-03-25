@@ -1,15 +1,23 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
+from enum import Enum
+from itertools import count
 
 app = FastAPI()
 
-tasks = []  # Храним задачи в памяти
+class TaskStatus(str, Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    completed = "completed"
 
 class Task(BaseModel):
     id: int
     title: str
-    status: str
+    status: TaskStatus
+
+task_counter = count(1)  # Генератор уникальных ID
+tasks = []  # Список задач
 
 @app.get("/tasks", response_model=List[Task])
 def get_tasks():
@@ -17,6 +25,7 @@ def get_tasks():
 
 @app.post("/tasks", response_model=Task)
 def create_task(task: Task):
+    task.id = next(task_counter)  # Генерируем уникальный ID
     tasks.append(task)
     return task
 
