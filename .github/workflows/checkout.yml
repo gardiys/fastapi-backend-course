@@ -1,0 +1,18 @@
+name: run_linter
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Check
+        run: ruff check --fix .
+
+      - name: Run Ruff Format
+        run: ruff format .
