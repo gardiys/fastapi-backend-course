@@ -1,19 +1,28 @@
-from fastapi import FastAPI
+import requests
+from flask import Flask, jsonify, request
 
-app = FastAPI()
+app = Flask(Даниил)
 
-@app.get("/tasks")
-def get_tasks():
-    pass
 
-@app.post("/tasks")
-def create_task(task):
-    pass
+API_KEY = '$2a$10$kowFjWD5dHKedIYMb6MbPe4DJ.7LmQI3aBxv3FAOFFdB8XGxe9ZsG'
+BIN_ID = '67eeb21c8561e97a50f81d9f'  
 
-@app.put("/tasks/{task_id}")
-def update_task(task_id: int):
-    pass
+# Заголовки для аутентификации
+headers = {
+    'Content-Type': 'application/json',
+    'secret-key': API_KEY
+}
 
-@app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    pass
+@app.route('/data', methods=['GET'])
+def get_data():
+    response = requests.get(f'https://api.jsonbin.io/v3/b/{BIN_ID}', headers=headers)
+    return jsonify(response.json()), response.status_code
+
+@app.route('/data', methods=['POST'])
+def update_data():
+    data = request.json  
+    response = requests.put(f'https://api.jsonbin.io/v3/b/{BIN_ID}', json=data, headers=headers)
+    return jsonify(response.json()), response.status_code
+
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -1,0 +1,50 @@
+import json
+import os
+
+class TaskStorage:
+    def __init__(self, filename='tasks.json'):
+        self.filename = filename
+        self.tasks = self.load_tasks()
+
+    def load_tasks(self):
+        """Загружает задачи из файла JSON."""
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r') as file:
+                return json.load(file)
+        return []
+
+    def save_tasks(self):
+        """Сохраняет задачи в файл JSON."""
+        with open(self.filename, 'w') as file:
+            json.dump(self.tasks, file, indent=4)
+
+    def add_task(self, task):
+        """Добавляет новую задачу."""
+        self.tasks.append(task)
+        self.save_tasks()
+
+    def get_tasks(self):
+        """Возвращает список всех задач."""
+        return self.tasks
+
+    def remove_task(self, task_index):
+        """Удаляет задачу по индексу."""
+        if 0 <= task_index < len(self.tasks):
+            del self.tasks[task_index]
+            self.save_tasks()
+            return True
+        return False
+
+# Пример использования класса TaskStorage
+if __name__ == "__main__":
+    storage = TaskStorage()
+
+    # Добавление новой задачи
+    storage.add_task({"title": "Купить молоко", "completed": False})
+
+    # Получение всех задач
+    tasks = storage.get_tasks()
+    print("Задачи:", tasks)
+
+    # Удаление задачи по индексу
+    storage.remove_task(0)
