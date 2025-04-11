@@ -1,19 +1,30 @@
-from fastapi import FastAPI
+from storage import TaskAPI
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
+task_api = TaskAPI()
+
+class TaskCreate(BaseModel):
+    title: str
+    status: str = "pending"
 
 @app.get("/tasks")
-def get_tasks():
-    pass
+async def get_tasks():
+    return await task_api.get_all()
 
 @app.post("/tasks")
-def create_task(task):
-    pass
+async def create_task(task_data: TaskCreate):
+    return await task_api.create(task_data.model_dump())
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int):
-    pass
+async def update_task(task_id: str, updated_task: TaskCreate):
+    return await task_api.update(task_id, updated_task.model_dump())
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    pass
+async def delete_task(task_id: str):
+    return await task_api.delete(task_id)
+
+if __name__ == "__main__":
+    uvicorn.run("main:app")
