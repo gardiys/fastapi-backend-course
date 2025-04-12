@@ -1,0 +1,41 @@
+name: Ruff Autofix
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  ruff-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Autofix errors
+        run: |
+          ruff check --fix .
+          ruff format .
+
+      - name: Commit fixes
+        if: github.event_name == 'pull_request'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "style: auto-fix by Ruff" || echo "No fixes needed"
+          git push
