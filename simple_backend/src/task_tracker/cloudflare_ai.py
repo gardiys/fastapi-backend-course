@@ -16,7 +16,6 @@ class CloudflareTaskManager(BaseHTTPClient):
         if not self.llm_api_token:
             raise ValueError("CLOUDFLARE_AI_TOKEN не установен")
 
-    # Реализация абстрактных методов (заглушки)
     async def get_all(self):
         raise NotImplementedError(
             "This method is not supported for CloudflareTaskManager"
