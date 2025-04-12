@@ -1,2 +1,9 @@
-fastapi
-uvicorn[standard]
+fastapi~=0.115.12
+uvicorn[standard]~=0.34.0
+pip~=23.2.1
+attrs~=24.3.0
+distro~=1.9.0
+python-dotenv~=1.0.1
+pydantic~=2.10.6
+requests~=2.32.3
+httpx~=0.28.1
