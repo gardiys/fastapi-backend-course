@@ -1,9 +1,10 @@
 import httpx
 from fastapi import HTTPException
 
+
 class TaskAPI:
-    def __init__(self):
-        self.base_url = 'https://67f904bb094de2fe6ea0235b.mockapi.io/back/user'
+    def __init__(self, base_url):
+        self.base_url = base_url
 
     async def get_all(self):
         async with httpx.AsyncClient() as client:
