@@ -1,0 +1,14 @@
+name: Простой CI
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - run: pip install ruff
+    - run: ruff check git/src/main.py

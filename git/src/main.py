@@ -1,30 +1,30 @@
+from pathlib import Path
 import json
-import os
+from typing import List, Dict, Any
 
-def load_books(filename='library.json'):
+
+def load_books(filename: str = "library.json") -> List[Dict[str, Any]]:
     """
     Загрузка списка книг из JSON-файла.
     Возвращает список книг (каждая книга - это словарь).
     """
-    if not os.path.isfile(filename):
+    if not Path(filename).is_file():
         return []
-    with open(filename, 'r', encoding='utf-8') as file:
+    with Path(filename).open(encoding="utf-8") as file:
         try:
             return json.load(file)
         except json.JSONDecodeError:
             return []
 
-def save_books(books, filename='library.json'):
-    """
-    Сохранение списка книг в JSON-файл.
-    """
-    with open(filename, 'w', encoding='utf-8') as file:
+
+def save_books(books: List[Dict[str, Any]], filename: str = "library.json") -> None:
+    """Сохранение списка книг в JSON-файл."""
+    with Path(filename).open("w", encoding="utf-8") as file:
         json.dump(books, file, ensure_ascii=False, indent=4)
 
-def list_books(books):
-    """
-    Возвращает строку со списком всех книг.
-    """
+
+def list_books(books: List[Dict[str, Any]]) -> str:
+    """Возвращает строку со списком всех книг."""
     if not books:
         return "Библиотека пуста."
     result_lines = []
@@ -32,28 +32,40 @@ def list_books(books):
         result_lines.append(f"{idx}. {book['title']} | {book['author']} | {book['year']}")
     return "\n".join(result_lines)
 
-def add_book(books, title, author, year):
+
+def add_book(
+    books: List[Dict[str, Any]],
+    title: str,
+    author: str,
+    year: str
+) -> List[Dict[str, Any]]:
     """
     Принимает текущий список книг и данные о новой книге.
     Возвращает новый список, в котором добавлена новая книга.
     """
     new_book = {
-        'title': title,
-        'author': author,
-        'year': year
+        "title": title,
+        "author": author,
+        "year": year
     }
-    # Создаём НОВЫЙ список, добавляя new_book
-    return books + [new_book]
+    return [*books, new_book]
 
-def remove_book(books, title):
+
+def remove_book(
+    books: List[Dict[str, Any]], 
+    title: str
+) -> List[Dict[str, Any]]:
     """
     Принимает текущий список книг и название книги для удаления.
     Возвращает новый список без книги, у которой совпадает название.
     """
-    # Фильтруем список: оставляем только те книги, у которых название не совпадает с переданным
-    return [book for book in books if book['title'].lower() != title.lower()]
+    return [book for book in books if book["title"].lower() != title.lower()]
 
-def search_books(books, keyword):
+
+def search_books(
+    books: List[Dict[str, Any]], 
+    keyword: str
+) -> List[Dict[str, Any]]:
     """
     Поиск книг по ключевому слову (ищется в названии и авторе).
     Возвращает отфильтрованный список.
@@ -61,12 +73,13 @@ def search_books(books, keyword):
     keyword_lower = keyword.lower()
     return [
         book for book in books
-        if keyword_lower in book['title'].lower() or keyword_lower in book['author'].lower()
+        if keyword_lower in book["title"].lower() or keyword_lower in book["author"].lower()
     ]
 
-def main():
+
+def main() -> None:
     """
-    Точка входа в программу: здесь мы загружаем книги, 
+    Точка входа в программу: здесь мы загружаем книги,
     показываем меню и обрабатываем ввод пользователя.
     """
     books = load_books()  # Загрузили список книг из JSON
@@ -81,11 +94,11 @@ def main():
 
         choice = input("Выберите действие (1-5): ").strip()
 
-        if choice == '1':
+        if choice == "1":
             print("\nСписок книг:")
             print(list_books(books))
 
-        elif choice == '2':
+        elif choice == "2":
             print("\nДобавление новой книги:")
             title = input("Введите название: ").strip()
             author = input("Введите автора: ").strip()
@@ -97,7 +110,7 @@ def main():
             save_books(books)  # Сразу сохраняем в файл
             print("Книга добавлена!")
 
-        elif choice == '3':
+        elif choice == "3":
             print("\nУдаление книги:")
             title_to_remove = input("Введите название книги, которую хотите удалить: ").strip()
 
@@ -109,7 +122,7 @@ def main():
             else:
                 print("Книга с таким названием не найдена.")
 
-        elif choice == '4':
+        elif choice == "4":
             print("\nПоиск книг:")
             keyword = input("Введите ключевое слово для поиска (в названии или авторе): ").strip()
             found_books = search_books(books, keyword)
@@ -119,12 +132,13 @@ def main():
             else:
                 print("Ничего не найдено.")
 
-        elif choice == '5':
+        elif choice == "5":
             print("Выход из программы.")
             break
 
         else:
             print("Некорректный ввод. Попробуйте ещё раз.")
+
 
 if __name__ == "__main__":
     main()
