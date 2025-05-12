@@ -9,16 +9,19 @@ import os
 
 from cloudflare_ai import CloudflareLLM
 
+print("До загрузки .env:", os.getenv("BIN_URLA"))
 load_dotenv()
 
-BIN_URL = os.getenv("BIN_URL")
+BIN_URLA = os.getenv("BIN_URLA")
 API_KEY = os.getenv("API_KEY")
+print("Загруженный BIN_URL:", BIN_URLA)
 
-storage = CloudStorage(BIN_URL, API_KEY)
+storage = CloudStorage(BIN_URLA, API_KEY)
 llm = CloudflareLLM()
 
 app = FastAPI()
 security = AuthX(config=config)
+print("BIN_URL: ", BIN_URLA)
 
 
 @app.post("/login")

@@ -1,18 +1,19 @@
 import requests
 from typing import List
 from models import Task
+from base_client import BaseHTTPClient
 
-class CloudStorage:
+class CloudStorage(BaseHTTPClient):
     def __init__(self, bin_url: str, api_key: str):
-        self.url = bin_url
-        self.headers = {
+        print("🔧 CloudStorage инициализируется с URL:", bin_url)
+        headers = {
             "X-Master-Key": api_key,
             "Content-Type": "application/json"
         }
+        super().__init__(bin_url, headers)
         
     def load_tasks(self) -> List[Task]:
         response = requests.get(self.url, headers=self.headers)
-        print("==RAW JSONBin ==\n", response.text)
         response.raise_for_status()
         
         data = response.json()
@@ -44,3 +45,6 @@ class CloudStorage:
     def save_tasks(self, tasks: List[Task]):
         response = requests.put(self.url, headers=self.headers, json=[task.dict() for task in tasks])
         response.raise_for_status()
+        
+    def _required_method(self):
+        pass
