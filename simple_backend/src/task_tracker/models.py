@@ -7,22 +7,25 @@ class StatusEnum(str, Enum):
     todo = "todo"
     in_progress = "in progress"
     done = "done"
-
+    new = "новая"
+    new2 = "обновочка"
+    
 #Модель для создания задачи(входные данные)
 class CreateTask(BaseModel):
-    title: str = Field(min_length=1,max_length=20)
+    description: str = Field(min_length=1,max_length=10000000)
     status: StatusEnum
     
 #Модель для полной задачи(выходные данные)
 class Task(CreateTask):
     id: int
+    solution: Optional[str] = None
     
 #Модель для обновления задачи
 class UpdateTask(BaseModel):
-    title: Optional[str] = Field(None, min_length=1, max_length=20)
+    description: Optional[str] = Field(None, min_length=1, max_length=10000000)
     status: Optional[StatusEnum]
     
 #Модель для входа
 class UserLogin(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=20)
+    password: str = Field(min_length=3, max_length=20)
