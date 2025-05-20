@@ -1,19 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI , status
 
 app = FastAPI()
 
-@app.get("/tasks")
-def get_tasks():
-    pass
+task_user = {}
 
-@app.post("/tasks")
-def create_task(task):
-    pass
+@app.get("/tasks")
+def get_tasks() -> dict:
+    return task_user
+
+@app.post("/tasks",status_code=status.HTTP_201_CREATED)
+def create_task(id:int,task_name,status_task):
+    task_user[id] = [task_name,status_task]
+    return f'Task created'
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int):
-    pass
+def update_task(task_id: int,task_name, status_task):
+    task_user[task_id] = [task_name,status_task]
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
-    pass
+    task_user.pop(task_id)

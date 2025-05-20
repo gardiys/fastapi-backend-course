@@ -1,2 +1,4 @@
+pip~=23.0.1
+setuptools~=65.5.0
 fastapi
 uvicorn[standard]
