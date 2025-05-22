@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="" />
+    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -54,7 +61,8 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/pawa2/PycharmProjects/fastapi-backend-course"
+    "last_opened_file_path": "C:/Users/pawa2/PycharmProjects/fastapi-backend-course",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -133,5 +141,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="xml" />
   </component>
 </project>
