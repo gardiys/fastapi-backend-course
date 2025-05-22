@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="Homework 2 before switching to JSONBIN">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -117,6 +115,15 @@
       <option name="presentableId" value="Default" />
       <updated>1747385026700</updated>
     </task>
+    <task id="LOCAL-00001" summary="Homework 2 before switching to JSONBIN">
+      <option name="closed" value="true" />
+      <created>1747906946890</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1747906946890</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -144,6 +151,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="xml" />
-    <option name="LAST_COMMIT_MESSAGE" value="xml" />
+    <MESSAGE value="Homework 2 before switching to JSONBIN" />
+    <option name="LAST_COMMIT_MESSAGE" value="Homework 2 before switching to JSONBIN" />
   </component>
 </project>

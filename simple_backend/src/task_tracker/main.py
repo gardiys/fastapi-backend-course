@@ -1,9 +1,12 @@
 from fastapi import FastAPI , status
 from json_db import Json_db
 
-app = FastAPI()
-json_db = Json_db("data.json")
 
+MASTER_API_KEY = "$2a$10$vS9hUcjtSMFHxBw0te7qcunwSZTMhK2Uwtt64GVJDUIdQU6g4sdw2"
+BIN_API_KEY = "682ef8b48960c979a59f1cc0"
+
+app = FastAPI()
+json_db = Json_db(MASTER_API_KEY,BIN_API_KEY)
 
 
 @app.get("/tasks")

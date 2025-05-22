@@ -1,52 +1,62 @@
 from fastapi import HTTPException
-import json
+import requests
 
 class Json_db:
-    def __init__(self, data_json):
-        self.data_json = data_json
+    def __init__(self, api_key, bin_id ):
+        self.api_key = api_key
+        self.bin_id = bin_id
+        self.headers = {
+            'Content-Type': 'application/json',
+            'X-Master-Key': self.api_key
+        }
+        self.url = f'https://api.jsonbin.io/v3/b/{self.bin_id}'
+
 
     def json_get_task(self):
-        with open(self.data_json,"r+",encoding="utf-8") as file:
-            load_data = json.load(file)
-            return load_data
+        response = requests.get(self.url, headers=self.headers)
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to fetch data")
+        return response.json()['record']
+
 
     def json_create_task(self, task_id, task_name, status_task):
-        with open(self.data_json, "r+", encoding="utf-8") as file:
-            loaded_data = json.load(file)
-            if task_id in loaded_data:
-                raise HTTPException(status_code=400, detail="Task with this ID already exists.")
+        data = self.json_get_task()
 
-            loaded_data[task_id] = [task_name, status_task]
-            file.seek(0)
-            file.truncate()
-            json.dump(loaded_data, file, ensure_ascii=False, indent=4)
+        if task_id in data:
+            raise HTTPException(status_code=400, detail="Task with this ID already exists.")
 
-        return f'Task created'
+        data[task_id] = [task_name,status_task]
+
+        self._save(data)
+
+        return f'Task {task_id} created'
 
     def json_update_task(self, task_id, task_name, status_task):
 
-        with open(self.data_json, "r+", encoding="utf-8") as file:
-            load_data = json.load(file)
+        data = self.json_get_task()
 
-            if task_id not in load_data:
-                raise HTTPException(status_code=404, detail="Task not found.")
+        if task_id not in data:
+            raise HTTPException(status_code=404, detail="Task not found.")
 
-            load_data[task_id] = [task_name, status_task]
-            file.seek(0)
-            file.truncate()
-            json.dump(load_data, file, ensure_ascii=False, indent=4)
+        data[task_id] = [task_name, status_task]
+        self._save(data)
 
         return f"Task {task_id} updated"
 
 
     def json_delete_task(self,task_id):
-        with open(self.data_json, "r+", encoding="utf-8") as file:
-            load_data = json.load(file)
+        data = self.json_get_task()
 
-            if task_id not in load_data:
-                raise HTTPException(status_code=404, detail="Task not found.")
+        if task_id not in data:
+            raise HTTPException(status_code=404, detail="Task not found.")
 
-            del load_data[task_id]
+        del data[task_id]
 
-            json.dump(load_data,file,ensure_ascii=False,indent=4)
+        return f'Task {task_id} was deleted'
 
+    def _save(self, updated_data):
+
+        response = requests.put(self.url, headers=self.headers, json=updated_data)
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to save data")
