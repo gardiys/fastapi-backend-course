@@ -1,5 +1,8 @@
 from fastapi import HTTPException
 import requests
+from llm_client import LLM
+
+
 
 class Json_db:
     def __init__(self, api_key, bin_id ):
@@ -26,7 +29,9 @@ class Json_db:
         if task_id in data:
             raise HTTPException(status_code=400, detail="Task with this ID already exists.")
 
-        data[task_id] = [task_name,status_task]
+        llm_model = LLM(task_name)
+        llm_response = llm_model.run()
+        data[task_id] = {'task_name':task_name, 'status_task':status_task,'llm_solution': llm_response}
 
         self._save(data)
 
@@ -39,7 +44,9 @@ class Json_db:
         if task_id not in data:
             raise HTTPException(status_code=404, detail="Task not found.")
 
-        data[task_id] = [task_name, status_task]
+        llm_model = LLM(task_name)
+        llm_response = llm_model.run()
+        data[task_id] = {'task_name': task_name, 'status_task': status_task, 'llm_solution': llm_response}
         self._save(data)
 
         return f"Task {task_id} updated"
@@ -52,6 +59,7 @@ class Json_db:
             raise HTTPException(status_code=404, detail="Task not found.")
 
         del data[task_id]
+        self._save(data)
 
         return f'Task {task_id} was deleted'
 

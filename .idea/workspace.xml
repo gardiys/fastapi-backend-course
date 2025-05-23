@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="Homework 2 before switching to JSONBIN">
+    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="Homework 2 JSONBIN">
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/llm_client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +54,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.cloudflare_api.executor": "Run",
     "Python.main.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -69,7 +70,29 @@
       <recent name="C:\Users\pawa2\PycharmProjects\fastapi-backend-course\simple_backend\src\task_tracker\venv" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.cloudflare_api">
+    <configuration name="cloudflare_api" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="fastapi-backend-course" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/simple_backend/src/task_tracker" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simple_backend/src/task_tracker/cloudflare_api.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="fastapi-backend-course" />
       <option name="ENV_FILES" value="" />
@@ -94,6 +117,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.cloudflare_api" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.main" />
@@ -123,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747906946890</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Homework 2 JSONBIN">
+      <option name="closed" value="true" />
+      <created>1747917766274</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1747917766274</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -152,6 +184,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="xml" />
     <MESSAGE value="Homework 2 before switching to JSONBIN" />
-    <option name="LAST_COMMIT_MESSAGE" value="Homework 2 before switching to JSONBIN" />
+    <MESSAGE value="Homework 2 JSONBIN" />
+    <option name="LAST_COMMIT_MESSAGE" value="Homework 2 JSONBIN" />
   </component>
 </project>
