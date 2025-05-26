@@ -4,11 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="Homework 2 JSONBIN">
-      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/llm_client.py" afterDir="false" />
+    <list default="true" id="dd6129ad-6511-4a97-84d5-a7352ba61be1" name="Changes" comment="Homework 3 release LLM Model">
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/base_http_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/jsonbin_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/fastapi-backend-course.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/fastapi-backend-course.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/data.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/llm_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/llm_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simple_backend/src/task_tracker/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/simple_backend/src/task_tracker/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,19 +57,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.cloudflare_api.executor": "Run",
-    "Python.main.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/pawa2/PycharmProjects/fastapi-backend-course",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.cloudflare_api.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/pawa2/PycharmProjects/fastapi-backend-course&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\pawa2\PycharmProjects\fastapi-backend-course\simple_backend\src\task_tracker" />
@@ -155,7 +161,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747917766274</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Homework 3 release LLM Model">
+      <option name="closed" value="true" />
+      <created>1748005934328</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1748005934328</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -185,6 +199,18 @@
     <MESSAGE value="xml" />
     <MESSAGE value="Homework 2 before switching to JSONBIN" />
     <MESSAGE value="Homework 2 JSONBIN" />
-    <option name="LAST_COMMIT_MESSAGE" value="Homework 2 JSONBIN" />
+    <MESSAGE value="Homework 3 release LLM Model" />
+    <option name="LAST_COMMIT_MESSAGE" value="Homework 3 release LLM Model" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/simple_backend/src/task_tracker/json_db.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

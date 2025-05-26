@@ -1,18 +1,24 @@
-import requests
+from base_http_client import BaseHTTPClient
 
-API_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/bf05c539c3c876ed195970a11b785cab/ai/run/"
-headers = {"Authorization": "Bearer BTQqu4KbIo8l8drwgdNmDW1R1ZXvzL9bX3Um6LaK"}
-class LLM:
+class LLMClient(BaseHTTPClient):
+    def __init__(self, api_key: str):
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        model = "@cf/meta/llama-3-8b-instruct"
+        base_url = f"https://api.cloudflare.com/client/v4/accounts/bf05c539c3c876ed195970a11b785cab/ai/run/{model}"
+        super().__init__(base_url, headers)
 
-    def __init__(self,task_input):
-        self.task_inputs = [{ "role": "system", "content": "Помоги решить и оптимизировать задачу" }
-            ,{"role": "user", "content": f'{task_input}'}]
-        self.model = "@cf/meta/llama-3-8b-instruct"
-    def run(self):
-        input = { "messages": self.task_inputs }
-        response = requests.post(f"{API_BASE_URL}{self.model}", headers=headers, json=input)
-        data = response.json()
-        text = data['result']['response']
-        print(text)
-        return text
+    def explain(self, task_text: str) -> str:
+        payload = {
+            "messages": [
+                {"role": "system", "content": "Помоги решить и оптимизировать задачу"},
+                {"role": "user", "content": task_text}
+            ]
+        }
+        response = self._post("", json=payload)
+        return response["result"]["response"]
 
+    def perform_action(self, task_text: str):
+        return self.explain(task_text)
