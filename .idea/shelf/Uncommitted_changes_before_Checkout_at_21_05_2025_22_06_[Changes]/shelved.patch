@@ -1,0 +1,222 @@
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Byte-compiled / optimized / DLL files\r\n__pycache__/\r\n*.py[cod]\r\n*$py.class\r\n\r\n# C extensions\r\n*.so\r\n\r\n# Distribution / packaging\r\n.Python\r\nbuild/\r\ndevelop-eggs/\r\ndist/\r\ndownloads/\r\neggs/\r\n.eggs/\r\nlib/\r\nlib64/\r\nparts/\r\nsdist/\r\nvar/\r\nwheels/\r\nshare/python-wheels/\r\n*.egg-info/\r\n.installed.cfg\r\n*.egg\r\nMANIFEST\r\n\r\n# PyInstaller\r\n#  Usually these files are written by a python script from a template\r\n#  before PyInstaller builds the exe, so as to inject date/other infos into it.\r\n*.manifest\r\n*.spec\r\n\r\n# Installer logs\r\npip-log.txt\r\npip-delete-this-directory.txt\r\n\r\n# Unit test / coverage reports\r\nhtmlcov/\r\n.tox/\r\n.nox/\r\n.coverage\r\n.coverage.*\r\n.cache\r\nnosetests.xml\r\ncoverage.xml\r\n*.cover\r\n*.py,cover\r\n.hypothesis/\r\n.pytest_cache/\r\ncover/\r\n\r\n# Translations\r\n*.mo\r\n*.pot\r\n\r\n# Django stuff:\r\n*.log\r\nlocal_settings.py\r\ndb.sqlite3\r\ndb.sqlite3-journal\r\n\r\n# Flask stuff:\r\ninstance/\r\n.webassets-cache\r\n\r\n# Scrapy stuff:\r\n.scrapy\r\n\r\n# Sphinx documentation\r\ndocs/_build/\r\n\r\n# PyBuilder\r\n.pybuilder/\r\ntarget/\r\n\r\n# Jupyter Notebook\r\n.ipynb_checkpoints\r\n\r\n# IPython\r\nprofile_default/\r\nipython_config.py\r\n\r\n# pyenv\r\n#   For a library or package, you might want to ignore these files since the code is\r\n#   intended to run in multiple environments; otherwise, check them in:\r\n# .python-version\r\n\r\n# pipenv\r\n#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.\r\n#   However, in case of collaboration, if having platform-specific dependencies or dependencies\r\n#   having no cross-platform support, pipenv may install dependencies that don't work, or not\r\n#   install all needed dependencies.\r\n#Pipfile.lock\r\n\r\n# poetry\r\n#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.\r\n#   This is especially recommended for binary packages to ensure reproducibility, and is more\r\n#   commonly ignored for libraries.\r\n#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control\r\n#poetry.lock\r\n\r\n# pdm\r\n#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.\r\n#pdm.lock\r\n#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it\r\n#   in version control.\r\n#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control\r\n.pdm.toml\r\n.pdm-python\r\n.pdm-build/\r\n\r\n# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm\r\n__pypackages__/\r\n\r\n# Celery stuff\r\ncelerybeat-schedule\r\ncelerybeat.pid\r\n\r\n# SageMath parsed files\r\n*.sage.py\r\n\r\n# Environments\r\n.env\r\n.venv\r\nenv/\r\nvenv/\r\nENV/\r\nenv.bak/\r\nvenv.bak/\r\n\r\n# Spyder project settings\r\n.spyderproject\r\n.spyproject\r\n\r\n# Rope project settings\r\n.ropeproject\r\n\r\n# mkdocs documentation\r\n/site\r\n\r\n# mypy\r\n.mypy_cache/\r\n.dmypy.json\r\ndmypy.json\r\n\r\n# Pyre type checker\r\n.pyre/\r\n\r\n# pytype static type analyzer\r\n.pytype/\r\n\r\n# Cython debug symbols\r\ncython_debug/\r\n\r\n# PyCharm\r\n#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can\r\n#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore\r\n#  and can be added to the global gitignore or merged into this file.  For a more nuclear\r\n#  option (not recommended) you can uncomment the following to ignore the entire idea folder.\r\n#.idea/\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision bdbdd6cd1fc5151264e04c678c151715025b320b)
++++ b/.gitignore	(date 1747854012940)
+@@ -160,3 +160,6 @@
+ #  and can be added to the global gitignore or merged into this file.  For a more nuclear
+ #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+ #.idea/
++
++
++.env
+\ No newline at end of file
+Index: simple_backend/src/task_tracker/json_storage.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simple_backend/src/task_tracker/json_storage.py b/simple_backend/src/task_tracker/json_storage.py
+new file mode 100644
+--- /dev/null	(date 1747852909179)
++++ b/simple_backend/src/task_tracker/json_storage.py	(date 1747852909179)
+@@ -0,0 +1,53 @@
++from fastapi import HTTPException
++import json
++
++class Json_storage:
++    def __init__(self,data_json):
++        self.data_json = data_json
++
++    def json_get_task(self):
++        with open(self.data_json, "r", encoding="utf-8") as file:
++            loaded_data = json.load(file)
++        return loaded_data
++
++    def json_create_task(self,task_id,task_name,status_task):
++        with open(self.data_json, "r+", encoding="utf-8") as file:
++            loaded_data = json.load(file)
++            if task_id in loaded_data:
++                raise HTTPException(status_code=400, detail="Task with this ID already exists.")
++
++
++            loaded_data[task_id] = [task_name,status_task]
++            file.seek(0)
++            file.truncate()
++            json.dump(loaded_data, file, ensure_ascii=False, indent=4)
++
++        return f'Task created'
++
++    def json_update_task(self,task_id,task_name,status_task):
++
++        with open(self.data_json, "r+", encoding="utf-8") as file:
++            loaded_data = json.load(file)
++            if not task_id in loaded_data:
++                raise HTTPException(status_code=404, detail="Task not found")
++
++            loaded_data[task_id] = [task_name,status_task]
++            file.seek(0)
++            file.truncate()
++            json.dump(loaded_data, file, ensure_ascii=False, indent=4)
++
++        return f'Task created'
++
++    def json_delete_task(self,task_id):
++        with open(self.data_json, "r+", encoding="utf-8") as file:
++            loaded_data = json.load(file)
++
++            if task_id not in loaded_data:
++                raise HTTPException(status_code=404, detail="Task not found")
++
++            del loaded_data[task_id]
++            file.seek(0)
++            file.truncate()
++            json.dump(loaded_data, file, ensure_ascii=False, indent=4)
++
++        return f'Task {task_id} removed'
+\ No newline at end of file
+Index: simple_backend/src/task_tracker/README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simple_backend/src/task_tracker/README.md b/simple_backend/src/task_tracker/README.md
+new file mode 100644
+--- /dev/null	(date 1747848747415)
++++ b/simple_backend/src/task_tracker/README.md	(date 1747848747415)
+@@ -0,0 +1,26 @@
++Минусы хранения задач в ОЗУ 
++заключается в том что, если мы выключим программу то все что
++хранилось в списке(словаре,кортеже и тд) в любом из
++участков памяти ОЗУ, исчезнет, для этого лучше хранить
++данные в ПЗУ а не в ОЗУ. Так как при хранение в ПЗУ даже при
++выключение программы или при каком-то сбои, данные буду сохранены
++
++
++
++После изменения принципа хранения данных ситуация стала лучше, так как 
++способ хранения изменился с ОЗУ на ПЗУ. Что делает хранения данных лучше и практичнее.
++
++По сути мы избавились от состояния храниния так как данные теперь хранятся в ПЗУ
++
++Для хранения задач можно использовать txt формат
++плюсы такого подхода это проста, минусы нету каких-то определнных
++индексов, низкая безопасность(ее тупо нету любой может открыть файл и делать что хочет)
++
++
++база данных можно использовать например SQlite
++Используется дефолтная библиотека в python sqlite3.
++Поддерживает SQL-запросы с которами удобнее работать
++Минусы плохо подходит для больших многопользовательских проектов
++
++
++
+Index: simple_backend/src/task_tracker/main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from fastapi import FastAPI , status\r\n\r\napp = FastAPI()\r\n\r\ntask_user = {}\r\n\r\n@app.get(\"/tasks\")\r\ndef get_tasks() -> dict:\r\n    return task_user\r\n\r\n@app.post(\"/tasks\",status_code=status.HTTP_201_CREATED)\r\ndef create_task(id:int,task_name,status_task):\r\n    task_user[id] = [task_name,status_task]\r\n    return f'Task created'\r\n\r\n@app.put(\"/tasks/{task_id}\")\r\ndef update_task(task_id: int,task_name, status_task):\r\n    task_user[task_id] = [task_name,status_task]\r\n\r\n@app.delete(\"/tasks/{task_id}\")\r\ndef delete_task(task_id: int):\r\n    task_user.pop(task_id)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simple_backend/src/task_tracker/main.py b/simple_backend/src/task_tracker/main.py
+--- a/simple_backend/src/task_tracker/main.py	(revision bdbdd6cd1fc5151264e04c678c151715025b320b)
++++ b/simple_backend/src/task_tracker/main.py	(date 1747853939019)
+@@ -1,22 +1,50 @@
+-from fastapi import FastAPI , status
++from fastapi import FastAPI , status,HTTPException
++from json_storage import Json_storage
+ 
+ app = FastAPI()
++json_storage = Json_storage("data.json")
++
+ 
+-task_user = {}
+ 
+-@app.get("/tasks")
++
++@app.get("/tasks",status_code=status.HTTP_200_OK)
+ def get_tasks() -> dict:
+-    return task_user
++
++    return json_storage.json_get_task()
++
++''' Один из вариантов добавления задач в программу
++    С автоматическим присваиванием id 
++'''
++# @app.post("/tasks", status_code=status.HTTP_201_CREATED)
++# def create_task(task_name: str, status_task: str):
++#     with open("data.json", "r+", encoding="utf-8") as file:
++#         loaded_data = json.load(file)
++#
++#         next_id = str(max(map(int, loaded_data.keys()), default=0) + 1)
++#
++#         loaded_data[next_id] = [task_name, status_task]
++#
++#         # Переместим курсор в начало и перезапишем содержимое
++#         file.seek(0)
++#         json.dump(loaded_data, file, ensure_ascii=False, indent=4)
++#         file.truncate()
++#
++#     return f'Task {next_id} created'
++
+ 
+ @app.post("/tasks",status_code=status.HTTP_201_CREATED)
+-def create_task(id:int,task_name,status_task):
+-    task_user[id] = [task_name,status_task]
+-    return f'Task created'
++def create_task(task_id:str,task_name,status_task):
++
++    return json_storage.json_create_task(task_id, task_name, status_task)
+ 
+-@app.put("/tasks/{task_id}")
+-def update_task(task_id: int,task_name, status_task):
+-    task_user[task_id] = [task_name,status_task]
+ 
+-@app.delete("/tasks/{task_id}")
+-def delete_task(task_id: int):
+-    task_user.pop(task_id)
++@app.put("/tasks/{task_id}",status_code=status.HTTP_200_OK)
++def update_task(task_id: str,task_name, status_task):
++
++    return json_storage.json_update_task(task_id,task_name,status_task)
++
++
++@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
++def delete_task(task_id: str):
++
++    return json_storage.json_delete_task(task_id)
+\ No newline at end of file
+Index: simple_backend/src/task_tracker/data.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simple_backend/src/task_tracker/data.json b/simple_backend/src/task_tracker/data.json
+new file mode 100644
+--- /dev/null	(date 1747852933755)
++++ b/simple_backend/src/task_tracker/data.json	(date 1747852933755)
+@@ -0,0 +1,18 @@
++{
++    "1": [
++        "penis",
++        "kakish"
++    ],
++    "2": [
++        "penis",
++        "kakish"
++    ],
++    "3": [
++        "jopka",
++        "kaki"
++    ],
++    "4": [
++        "jopka",
++        "kaki"
++    ]
++}
+\ No newline at end of file

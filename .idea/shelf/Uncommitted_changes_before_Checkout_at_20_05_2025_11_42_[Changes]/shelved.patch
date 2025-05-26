@@ -1,0 +1,13 @@
+Index: simple_backend/src/task_tracker/requirements.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/simple_backend/src/task_tracker/requirements.txt b/simple_backend/src/task_tracker/requirements.txt
+new file mode 100644
+--- /dev/null	(date 1747730436943)
++++ b/simple_backend/src/task_tracker/requirements.txt	(date 1747730436943)
+@@ -0,0 +1,2 @@
++pip~=23.0.1
++setuptools~=65.5.0
+\ No newline at end of file
