@@ -11,7 +11,7 @@ class FileStorage:
         if not self.file_path.exists():
             self.file_path.write_text("[]", encoding="utf=8")
     
-    def read_task(self):
+    def read_tasks(self):
         """Читает задачи из файла"""
         self._ensure_file_exists()
         try:
