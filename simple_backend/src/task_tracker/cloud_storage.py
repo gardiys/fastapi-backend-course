@@ -7,7 +7,7 @@ class JsonBinStorage:
         self.api_key = os.getenv(
             "$2a$10$rlAq/RPs3gqHnUj9vqLJUuiZdrf1/XVD85jUt5Nyn.7/hCA1Td.IS")
         self.bin_id = os.getenv("68471ece8561e97a50218d12")
-        self.base_url = "https://jsonbin.io"
+        self.base_url = "https://jsonbin.io/v3/b"
 
     def _get_headers(self):
         return {
@@ -20,12 +20,12 @@ class JsonBinStorage:
         """Чтение задач из облачного хранилища"""
         try:
             response = requests.get(
-                f"{self.base_url}/{self.bin_id}/latest",
-                headers=self._get_headers
+                f"{self.base_url}/{self.bin_id}",
+                headers=self._get_headers()
             )
             response.raise_for_status()
-            return response.json().get("record, []")
-        except requests.exception.RequestException:
+            return response.json().get("record", [])
+        except requests.exceptions.RequestException:
             return []
 
     def save_task(self, tasks):
@@ -33,7 +33,7 @@ class JsonBinStorage:
         requests.put(
             f"{self.base_url}/{self.bin_id}",
             json=tasks,
-            headers=self._get_headers
+            headers=self._get_headers()
         )
 
     def get_next_id(self, tasks):
