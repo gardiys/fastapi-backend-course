@@ -3,11 +3,13 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 from pathlib import Path
-from file_storage import FileStorage
+# from file_storage import FileStorage
+from cloud_storage import JsonBinStorage
 
 
 app = FastAPI()
-storage = FileStorage()
+# storage = FileStorage()
+storage = JsonBinStorage()
 
 # Путь к json файлу
 TASK_FILE = Path(
@@ -20,15 +22,6 @@ class Task(BaseModel):
     status: str
 
 
-class TaskCreate(BaseModel):
-    title: str
-    status: str = "pending"
-
-
-class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    status: Optional[str] = None
-
 # API
 @app.get("/tasks", response_model=list[Task])
 def get_tasks():
@@ -37,50 +30,44 @@ def get_tasks():
 
 
 @app.post("/tasks", response_model=Task)
-def create_task(task_data: TaskCreate):
+def create_task(title: str, status: str = "pending"):
     """Создаем новую задачу"""
     tasks = storage.read_tasks()
     new_task = {
         "id": storage.get_next_id(tasks),
-        "title": task_data.title,
-        "status": task_data.status
+        "title": title,
+        "status": status
     }
     tasks.append(new_task)
-    storage.save_tasks(tasks)
+    storage.save_task(tasks)
     return Task(**new_task)
 
 
 @app.put("/tasks/{task_id}", response_model=Task)
-def update_task(task_id: int, task_data: TaskUpdate):
+def update_task(task_id: int, title: Optional[str] = None, status: Optional[str] = None):
     """Обновляет задачу"""
     tasks = storage.read_tasks()
-    update = False
 
     for task in tasks:
         if task["id"] == task_id:
-            if task_data.title is not None:
-                task["title"] = task_data.title
-            if task_data.status is not None:
-                task["status"] = task_data.status
-            update = True
-            break
-    
-    if not update:
-        raise HTTPException(status_code=404, detail="Task not found")
-    
-    storage.save_tasks(tasks)
-    return Task(**task)
+            if title is not None:
+                task["title"] = title
+            if status is not None:
+                task["status"] = status
+            storage.save_task(tasks)
+            return Task(**task)
+    raise HTTPException(status_code=404, detail="Task not found")
 
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
     """Удаляет задачу"""
-    tasks_data = storage.read_tasks()
-    length = len(tasks_data)
-    tasks_data = [task for task in tasks_data if task["id"] != task_id]
-    
+    tasks = storage.read_tasks()
+    length = len(tasks)
+    tasks_data = [task for task in tasks if task["id"] != task_id]
+
     if len(tasks_data) == length:
         raise HTTPException(status_code=404, detail="Task not found")
-    
-    storage.save_tasks(tasks_data)
+
+    storage.save_task(tasks)
     return {"message": "Task deleted successfully"}
