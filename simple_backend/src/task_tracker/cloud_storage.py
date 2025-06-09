@@ -36,6 +36,6 @@ class JsonBinStorage:
             headers=self._get_headers
         )
 
-    def get_nex_id(self, tasks):
+    def get_next_id(self, tasks):
         """Генерация следующего ID"""
         return max(task["id"] for task in tasks) + 1 if tasks else 1
