@@ -4,15 +4,14 @@ import os
 
 class JsonBinStorage:
     def __init__(self):
-        self.api_key = os.getenv(
-            "$2a$10$rlAq/RPs3gqHnUj9vqLJUuiZdrf1/XVD85jUt5Nyn.7/hCA1Td.IS")
-        self.bin_id = os.getenv("68471ece8561e97a50218d12")
-        self.base_url = "https://jsonbin.io/v3/b"
+        self.api_key = os.getenv('JSONBIN_API_KEY')
+        self.bin_id = os.getenv('JSONBIN_BIN_ID')
+        self.base_url = "https://api.jsonbin.io/v3/b"
 
     def _get_headers(self):
         return {
-            "Content-Type": "applivation/json",
-            "X-Master-key": self.api_key,
+            "Content-Type": "application/json",
+            "X-Master-Key": self.api_key,
             "x-Bin-Versioning": "False"
         }
 
