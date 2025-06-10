@@ -1,19 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+from dotenv import load_dotenv
 import json
 from pathlib import Path
 # from file_storage import FileStorage
 from cloud_storage import JsonBinStorage
 
+load_dotenv()
 
 app = FastAPI()
 # storage = FileStorage()
 storage = JsonBinStorage()
-
-# Путь к json файлу
-TASK_FILE = Path(
-    "C:\\Users\\sereg\\Desktop\\git_homework\\fastapi-backend-course\\simple_backend\\src\\task_tracker\\tasks.json")
 
 
 class Task(BaseModel):
