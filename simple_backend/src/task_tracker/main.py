@@ -60,9 +60,9 @@ def delete_task(task_id: int):
     """Удаляет задачу"""
     tasks = storage.read_tasks()
     length = len(tasks)
-    tasks_data = [task for task in tasks if task["id"] != task_id]
+    tasks = [task for task in tasks if task["id"] != task_id]
 
-    if len(tasks_data) == length:
+    if len(tasks) == length:
         raise HTTPException(status_code=404, detail="Task not found")
 
     storage.save_task(tasks)
