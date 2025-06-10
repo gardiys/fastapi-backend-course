@@ -39,8 +39,13 @@ class JsonBinStorage:
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException as e:
-            print("Error saving tasks: {e}")
+            print(f"Error saving tasks: {e}")
 
     def get_next_id(self, tasks):
         """Генерация следующего ID"""
-        return max(task["id"] for task in tasks) + 1 if tasks else 1
+        if not tasks:
+            return 1
+        try:
+            return max(task["id"] for task in tasks) + 1
+        except (ValueError, KeyError):
+            return 1
