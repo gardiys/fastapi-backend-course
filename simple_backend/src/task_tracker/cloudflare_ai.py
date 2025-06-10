@@ -30,7 +30,7 @@ class CloudflareAI:
                 json={"messages": [
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
-                ]}
+                ]}, timeout=10
             )
             response.raise_for_status()
             return response.json().get("result", {}).get("response")
