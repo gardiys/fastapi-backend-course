@@ -40,6 +40,7 @@ class JsonBinStorage:
             return True
         except requests.exceptions.RequestException as e:
             print(f"Error saving tasks: {e}")
+            return False
 
     def get_next_id(self, tasks):
         """Генерация следующего ID"""
