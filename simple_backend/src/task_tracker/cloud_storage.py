@@ -12,14 +12,14 @@ class JsonBinStorage:
         return {
             "Content-Type": "application/json",
             "X-Master-Key": self.api_key,
-            "x-Bin-Versioning": "False"
+            "x-Bin-Versioning": "false"
         }
 
     def read_tasks(self):
         """Чтение задач из облачного хранилища"""
         try:
             response = requests.get(
-                f"{self.base_url}/{self.bin_id}",
+                f"{self.base_url}/{self.bin_id}/latest",
                 headers=self._get_headers()
             )
             response.raise_for_status()
