@@ -63,18 +63,15 @@ def update_task(task_id: int, title: Optional[str] = None, status: Optional[str]
     return Task(**task)
     
 
-
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
     """Удаляет задачу"""
-    tasks = storage.read_tasks()
+    tasks_data = storage.read_tasks()
+    length = len(tasks_data)
+    tasks_data = [task for task in tasks_data if task["id"] != task_id]
 
-    updated_tasks = [task for task in tasks if task["id"] != task_id]
-
-    if not update_task:
+    if len(tasks_data) == length:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    if not storage.save_task(updated_tasks if updated_tasks else []):
-        raise HTTPException(status_code=404, detail="Failed to delete task")
-
+    storage.save_task(tasks_data)
     return {"message": "Task deleted successfully"}
