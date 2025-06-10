@@ -16,7 +16,7 @@ class Task(BaseModel):
     id: int
     title: str
     status: str
-    solution_suggestion: Optional[str] = None
+    solution_suggestions: Optional[str] = None
 
 
 # API
@@ -38,7 +38,7 @@ async def create_task(title: str, status: str = "pending"):
         "id": storage.get_next_id(tasks),
         "title": title,
         "status": status,
-        "solution_suggestion": ai_suggestions
+        "solution_suggestions": ai_suggestions
     }
 
     tasks.append(new_task)
@@ -63,7 +63,7 @@ def update_task(task_id: int, title: Optional[str] = None, status: Optional[str]
             break
 
     if not task_found:
-        raise HTTPException(status_code=500, detail="Task not found")
+        raise HTTPException(status_code=404, detail="Task not found")
 
     if not storage.save_task(tasks):
         raise HTTPException(status_code=500, detail="Failed to update task")
