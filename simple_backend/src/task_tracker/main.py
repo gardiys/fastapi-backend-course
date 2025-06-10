@@ -3,17 +3,20 @@ from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
 from cloud_storage import JsonBinStorage
+from cloudflare_ai import CloudflareAI
 
 load_dotenv()
 
 app = FastAPI()
 storage = JsonBinStorage()
+ai_helper = CloudflareAI()
 
 
 class Task(BaseModel):
     id: int
     title: str
     status: str
+    solution_suggestion: Optional[str] = None
 
 
 # API
@@ -25,14 +28,19 @@ def get_tasks():
 
 
 @app.post("/tasks", response_model=Task)
-def create_task(title: str, status: str = "pending"):
-    """Создаем новую задачу"""
+async def create_task(title: str, status: str = "pending"):
+    """Создаем новую задачу с AI рекомендацией"""
     tasks = storage.read_tasks()
+
+    ai_suggestions = ai_helper.get_task_solution_suggestions(title)
+
     new_task = {
         "id": storage.get_next_id(tasks),
         "title": title,
-        "status": status
+        "status": status,
+        "solution_suggestion": ai_suggestions
     }
+
     tasks.append(new_task)
     if not storage.save_task(tasks):
         raise HTTPException(status_code=500, detail="Failed to save task")
@@ -53,15 +61,15 @@ def update_task(task_id: int, title: Optional[str] = None, status: Optional[str]
             if status is not None:
                 task["status"] = status
             break
-    
+
     if not task_found:
         raise HTTPException(status_code=500, detail="Task not found")
-    
+
     if not storage.save_task(tasks):
         raise HTTPException(status_code=500, detail="Failed to update task")
-    
+
     return Task(**task)
-    
+
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
@@ -72,6 +80,6 @@ def delete_task(task_id: int):
 
     if len(tasks_data) == length:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     storage.save_task(tasks_data)
     return {"message": "Task deleted successfully"}
