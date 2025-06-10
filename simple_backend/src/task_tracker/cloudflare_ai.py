@@ -24,12 +24,12 @@ class CloudflareAI:
             response = requests.post(
                 f"{self.base_url}/{self.model}",
                 headers={
-                    "Aurhorization": f"Bearer {self.api_token}",
+                    "Authorization": f"Bearer {self.api_token}",
                     "Content-Type": "application/json"
                 },
                 json={"messages": [
                     {"role": "system", "content": "You are a helpful assistant."},
-                    {"rolee": "user", "content": prompt}
+                    {"role": "user", "content": prompt}
                 ]}
             )
             response.raise_for_status()
