@@ -24,16 +24,22 @@ class JsonBinStorage:
             )
             response.raise_for_status()
             return response.json().get("record", [])
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
+            print(f"Error reading task: {e}")
             return []
 
-    def save_task(self, tasks):
+    def save_task(self, tasks) -> bool:
         """Сохранение задач в облачное хранилище"""
-        requests.put(
+        try:
+            response = requests.put(
             f"{self.base_url}/{self.bin_id}",
             json=tasks,
             headers=self._get_headers()
-        )
+            )
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException as e:
+            print("Error saving tasks: {e}")
 
     def get_next_id(self, tasks):
         """Генерация следующего ID"""
