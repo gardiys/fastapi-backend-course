@@ -4,13 +4,11 @@ from typing import Optional
 from dotenv import load_dotenv
 import json
 from pathlib import Path
-# from file_storage import FileStorage
 from cloud_storage import JsonBinStorage
 
 load_dotenv()
 
 app = FastAPI()
-# storage = FileStorage()
 storage = JsonBinStorage()
 
 
