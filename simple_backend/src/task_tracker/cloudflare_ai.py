@@ -2,6 +2,7 @@ import requests
 from dotenv import load_dotenv
 import os
 from typing import Optional
+from functools import lru_cache
 
 load_dotenv()
 
@@ -12,6 +13,7 @@ class CloudflareAI:
         self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/"
         self.model = "@cf/meta/llama-3-8b-instruct"
 
+    @lru_cache(maxsize=100)
     def get_task_solution_suggestions(self, task_description: str) -> Optional[str]:
         """Получаем советы"""
         prompt = f"""
