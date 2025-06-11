@@ -9,15 +9,14 @@ class CloudflareAI:
     def __init__(self):
         self.api_token = os.getenv('CLOUDFLARE_API_TOKEN')
         self.account_id = os.getenv('CLOUDFLARE_ACCOUNT_ID')
-        self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run"
-        self.model = "@cf/meta/llama-2-7b-chat-int8"
+        self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/"
+        self.model = "@cf/meta/llama-3-8b-instruct"
 
     def get_task_solution_suggestions(self, task_description: str) -> Optional[str]:
         """Получаем советы"""
         prompt = f"""
         Ты помощник. Пользователь создает задачу:
         "{task_description}". Кратко предложи 2-3 практических способа решения этой задачи.
-        Ответ дай в формате маркированного списка.
         """
 
         try:
@@ -28,9 +27,9 @@ class CloudflareAI:
                     "Content-Type": "application/json"
                 },
                 json={"messages": [
-                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "system", "content": "Вы полезный помощник."},
                     {"role": "user", "content": prompt}
-                ]}, timeout=10
+                ]}, timeout=30
             )
             response.raise_for_status()
             return response.json().get("result", {}).get("response")
