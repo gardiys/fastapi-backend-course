@@ -7,9 +7,10 @@ from cloudflare_ai import CloudflareAI
 
 load_dotenv()
 
-app = FastAPI()
 storage = JsonBinStorage()
 ai_helper = CloudflareAI()
+
+app = FastAPI()
 
 
 class Task(BaseModel):
