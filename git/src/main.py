@@ -95,6 +95,7 @@ def main():
             new_books = add_book(books, title, author, year)
             books = new_books  # Обновляем переменную, чтобы сохранить изменения
             save_books(books)  # Сразу сохраняем в файл
+
             print("Книга добавлена!")
 
         elif choice == '3':
@@ -105,6 +106,7 @@ def main():
             if len(new_books) < len(books):
                 books = new_books
                 save_books(books)
+
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
