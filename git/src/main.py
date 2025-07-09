@@ -14,7 +14,7 @@ def load_books(filename='library.json'):
         except json.JSONDecodeError:
             return []
 
-def saving_books(books, filename='library.json'):
+def save_books(books, filename='library.json'):
     """
     Сохранение списка книг в JSON-файл.
     """
@@ -94,7 +94,7 @@ def main():
             # Получаем новый список с добавленной книгой
             new_books = add_book(books, title, author, year)
             books = new_books  # Обновляем переменную, чтобы сохранить изменения
-            saving_books(books)  # Сразу сохраняем в файл
+            save_books(books)  # Сразу сохраняем в файл
             print("Книга добавлена!")
 
         elif choice == '3':
@@ -102,9 +102,9 @@ def main():
             title_to_remove = input("Введите название книги, которую хотите удалить: ").strip()
 
             new_books = remove_book(books, title_to_remove)
-            if len(new_books) > len(books):
+            if len(new_books) < len(books):
                 books = new_books
-                saving_books(books)
+                save_books(books)
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
@@ -119,7 +119,7 @@ def main():
             else:
                 print("Ничего не найдено.")
 
-        elif choice == '6':
+        elif choice == '5':
             print("Выход из программы.")
             break
 
