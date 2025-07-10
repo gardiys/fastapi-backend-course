@@ -7,9 +7,5 @@ class TaskCreateAndUpdateSchema(BaseModel):
     status: str
 
 
-class CreatedTaskReadSchema(BaseModel):
+class TaskSchema(TaskCreateAndUpdateSchema):
     id: int
-
-
-class TaskReadSchema(TaskCreateAndUpdateSchema, CreatedTaskReadSchema):
-    pass
