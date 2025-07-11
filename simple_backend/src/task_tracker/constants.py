@@ -1,7 +1,5 @@
-import os.path
+import os
+from os.path import abspath, dirname
 
-TASKS_FILE_NAME: str = "tasks.json"
-TASKS_FILE_PATH: str = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    TASKS_FILE_NAME,
-)
+ENV_FILE_NAME: str = ".env"
+ENV_FILE_PATH: str = os.path.join(dirname(abspath(__file__)), ENV_FILE_NAME)
