@@ -2,10 +2,15 @@
 from pydantic import BaseModel
 
 
-class TaskCreateAndUpdateSchema(BaseModel):
+class TaskCreateSchema(BaseModel):
     name: str
     status: str
+    description: str
 
 
-class TaskSchema(TaskCreateAndUpdateSchema):
+class TaskUpdateSchema(TaskCreateSchema):
+    solution: str
+
+
+class TaskSchema(TaskUpdateSchema):
     id: int

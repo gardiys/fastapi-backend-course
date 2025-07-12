@@ -1,16 +1,20 @@
 from fastapi import FastAPI
 
 import exceptions
-import jsonbin_utils
 from config import settings
-from schemas import TaskCreateAndUpdateSchema, TaskSchema
+from schemas import TaskCreateSchema, TaskSchema, TaskUpdateSchema
+from utils.cloudflare_utils import CloudflareService
+from utils.jsonbin_utils import JSONBinService
 
 app = FastAPI()
 
-jsonbin_service = jsonbin_utils.JSONBinService(
+jsonbin_service = JSONBinService(
     bin_id=settings.JSONBIN_BIN_ID,
     access_key=settings.JSONBIN_ACCESS_KEY,
     master_key=settings.JSONBIN_MASTER_KEY,
+)
+cloudflare_service = CloudflareService(
+    account_id=settings.CLOUDFLARE_ACCOUNT_ID, api_token=settings.CLOUDFLARE_API_TOKEN
 )
 
 
@@ -20,31 +24,28 @@ async def get_tasks() -> list[TaskSchema]:
 
 
 @app.post("/tasks")
-async def create_task(task: TaskCreateAndUpdateSchema) -> TaskSchema:
+async def create_task(task: TaskCreateSchema) -> TaskSchema:
+    solution = await cloudflare_service.get_solution(task_description=task.description)
     tasks = await jsonbin_service.load_entities()
 
     created_task = task.model_dump()
     created_task_id = tasks[-1]["id"] + 1 if tasks else 1
     created_task["id"] = created_task_id
+    created_task["solution"] = solution
 
     tasks.append(created_task)
-
     await jsonbin_service.dump_entities(entities=tasks)
 
     return TaskSchema(**created_task)
 
 
 @app.put("/tasks/{task_id}")
-async def update_task(
-    task_id: int, update_data: TaskCreateAndUpdateSchema
-) -> TaskSchema:
+async def update_task(task_id: int, update_data: TaskUpdateSchema) -> TaskSchema:
     tasks = await jsonbin_service.load_entities()
 
     for task in tasks:
         if task["id"] == task_id:
-            task["name"] = update_data.name
-            task["status"] = update_data.status
-
+            task.update(update_data)
             await jsonbin_service.dump_entities(entities=tasks)
             return TaskSchema(**task)
 

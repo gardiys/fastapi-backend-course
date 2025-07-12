@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     JSONBIN_MASTER_KEY: str
     JSONBIN_ROOT_URL: str
 
+    CLOUDFLARE_ACCOUNT_ID: str
+    CLOUDFLARE_API_TOKEN: str
+
     model_config = SettingsConfigDict(env_file=constants.ENV_FILE_PATH)
 
 
