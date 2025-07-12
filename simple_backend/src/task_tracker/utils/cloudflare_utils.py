@@ -1,7 +1,8 @@
-import aiohttp
+
+from utils.base_utils import BaseHTTPClient
 
 
-class CloudflareService:
+class CloudflareService(BaseHTTPClient):
     MODEL: str = "@cf/meta/llama-3-8b-instruct"
     PROMPT_TEMPLATE: str = (
         "Generate a brief and clear solution for the following task:\n{description}\n"
@@ -14,28 +15,25 @@ class CloudflareService:
         self.api_token = api_token
 
     @property
-    def api_base_url(self) -> str:
+    def base_url(self) -> str:
         return (
             f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/"
         )
 
-    async def get_solution(self, task_description: str) -> str:
-        async with aiohttp.ClientSession() as session:
-            request_body = {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": self.PROMPT_TEMPLATE.format(
-                            description=task_description
-                        ),
-                    }
-                ]
-            }
+    @property
+    def headers(self) -> str:
+        return {self.AUTHORIZATION_HEADER_NAME: f"Bearer {self.api_token}"}
 
-            async with session.post(
-                url=f"{self.api_base_url}{self.MODEL}",
-                json=request_body,
-                headers={self.AUTHORIZATION_HEADER_NAME: f"Bearer {self.api_token}"},
-            ) as response:
-                response_body = await response.json()
-                return response_body["result"]["response"]
+    async def get_solution(self, task_description: str) -> str:
+        request_body = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": self.PROMPT_TEMPLATE.format(
+                        description=task_description
+                    ),
+                }
+            ]
+        }
+        response_body = await self._post(json=request_body, path=self.MODEL)
+        return response_body["result"]["response"]

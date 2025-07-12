@@ -1,9 +1,9 @@
-import aiohttp
 
 from config import settings
+from utils.base_utils import BaseHTTPClient
 
 
-class JSONBinService:
+class JSONBinService(BaseHTTPClient):
     MASTER_KEY_HEADER_NAME: str = "X-Master-Key"
     ACCESS_KEY_HEADER_NAME: str = "X-Access-Key"
     CONTENT_TYPE_HEADER_NAME: str = "Content-Type"
@@ -15,28 +15,19 @@ class JSONBinService:
         self.master_key = master_key
 
     @property
-    def bin_url(self) -> str:
+    def base_url(self) -> str:
         return f"{settings.JSONBIN_ROOT_URL}/b/{self.bin_id}"
 
+    @property
+    def headers(self) -> dict[str, str]:
+        return {
+            self.MASTER_KEY_HEADER_NAME: self.master_key,
+            self.ACCESS_KEY_HEADER_NAME: self.access_key,
+        }
+
     async def load_entities(self) -> list[dict[str, int | str]]:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url=self.bin_url,
-                headers={
-                    self.MASTER_KEY_HEADER_NAME: self.master_key,
-                    self.ACCESS_KEY_HEADER_NAME: self.access_key,
-                },
-            ) as response:
-                response_body = await response.json()
-                return [] if not response_body["record"][0] else response_body["record"]
+        response_body = await self._get()
+        return [] if not response_body["record"][0] else response_body["record"]
 
     async def dump_entities(self, entities: list[dict[str, int | str]]) -> None:
-        async with aiohttp.ClientSession() as session:
-            await session.put(
-                url=self.bin_url,
-                json=entities if entities else [{}],
-                headers={
-                    self.MASTER_KEY_HEADER_NAME: self.master_key,
-                    self.ACCESS_KEY_HEADER_NAME: self.access_key,
-                },
-            )
+        await self._put(json=entities if entities else [{}])
