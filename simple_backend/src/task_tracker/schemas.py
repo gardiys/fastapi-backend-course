@@ -1,4 +1,3 @@
-# MARK: Schemas
 from pydantic import BaseModel
 
 
