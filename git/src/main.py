@@ -53,7 +53,6 @@ class GroupOrder(Order):
         dish_list = "\n".join([str(dish) for dish in self.dishes])
         return f"Group Order for {customer_list}:\n{dish_list}\nTotal: ${self.final_total():.2f}"
 
-
 class Dish:
     def __init__(self, name, price, category):
         self.name = name
@@ -62,6 +61,8 @@ class Dish:
 
     def __str__(self):
         return f"Dish: {self.name}, Category: {self.category}, Price: ${self.price:.2f}"
+
+
 
 
 class Customer:
@@ -76,8 +77,6 @@ class Customer:
 
     def __str__(self):
         return f"Customer: {self.name}, Membership: {self.membership}"
-
-
 # Пример использования
 
 # Создаем блюда
