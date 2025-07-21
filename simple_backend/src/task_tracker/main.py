@@ -3,7 +3,6 @@ from http.client import HTTPException
 
 from schemas import Task, TaskUpdate
 
-
 app = FastAPI()
 
 tasks: list[Task] = []
