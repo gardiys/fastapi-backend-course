@@ -1,11 +1,19 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from http.client import HTTPException
 
-from crud import TaskJson
+from cloud import CloudStorage
 from schemas import Task
 
 app = FastAPI()
-data = TaskJson("tasks.json")
+load_dotenv()
+
+data = CloudStorage(
+    bin_id=os.getenv("BIN_ID"),
+    secret_key=os.getenv("SECRET_KEY")
+)
 
 @app.get("/tasks", response_model=list[Task])
 def get_tasks():

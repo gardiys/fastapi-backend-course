@@ -23,3 +23,12 @@
 1. Базы данных (SQLite, PostgreSQL, MongoDB)
 2. Облачные API (jsonbin.io, mockapi.io) 
 
+
+### Состояние гонки
+
+Осталась проблема параллельной записи.
+
+Возможные решения:
+- Использовать БД
+- Использовать блокировки (threading.Lock, Redis-блокировки)
+- Делать optimistic update через версионирование (etag, timestamp)
