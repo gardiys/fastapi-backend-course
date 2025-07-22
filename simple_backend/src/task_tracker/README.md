@@ -20,4 +20,6 @@
 Нет, состояние всё ещё хранится локально — но уже более устойчиво. Это по-прежнему stateful-подход.
 
 Где ещё можно хранить задачи?
-Базы данных (SQLite, PostgreSQL, MongoDB)
+1. Базы данных (SQLite, PostgreSQL, MongoDB)
+2. Облачные API (jsonbin.io, mockapi.io) 
+
