@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, ConfigDict
 from const import TaskStatus
 
 class Task(BaseModel):
@@ -7,6 +6,4 @@ class Task(BaseModel):
     title: str
     status: TaskStatus = TaskStatus.PLANNED
 
-class TaskUpdate(BaseModel):
-    title: str
-    status: TaskStatus = TaskStatus.PLANNED
+    model_config = ConfigDict(use_enum_values=True)
