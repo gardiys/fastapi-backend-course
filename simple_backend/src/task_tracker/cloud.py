@@ -1,24 +1,25 @@
 import requests
-from schemas import Task
 
-class CloudStorage:
+from schemas import Task
+from base_client import BaseHTTPClient
+
+
+class CloudStorage(BaseHTTPClient):
     def __init__(self, bin_id: str, secret_key: str):
-        self.url = f"https://api.jsonbin.io/v3/b/{bin_id}"
-        self.headers = {
+        url = f"https://api.jsonbin.io/v3/b/{bin_id}"
+        headers = {
             "X-Master-Key": secret_key,
             "Content-Type": "application/json"
         }
+        super().__init__(url, headers)
 
     def _read(self) -> list[Task]:
-        response = requests.get(self.url, headers=self.headers)
-        response.raise_for_status()
-        print("RESPONSE:", response.json())
-        return [Task(**task) for task in response.json()["record"]]
+        data = self.get()
+        return [Task(**task) for task in data["record"]]
 
     def _write(self, tasks: list[Task]):
         json_data = [task.model_dump() for task in tasks]
-        response = requests.put(self.url, json=json_data, headers=self.headers)
-        response.raise_for_status()
+        self.put(json_data)
 
     def get_all(self) -> list[Task]:
         return self._read()
@@ -49,3 +50,6 @@ class CloudStorage:
                 self._write(tasks)
                 return
         raise ValueError("Task not found")
+
+    def handle(self, *args, **kwargs):
+        return self.get_all()

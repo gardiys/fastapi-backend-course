@@ -8,25 +8,23 @@ from cloud import CloudStorage
 from schemas import Task
 from llm import LLMAssistant
 
-app = FastAPI()
 load_dotenv()
+app = FastAPI()
 
 data = CloudStorage(
     bin_id=os.getenv("BIN_ID"),
     secret_key=os.getenv("SECRET_KEY")
 )
 
-llm = LLMAssistant(api_token="CLOUDFLARE_API_KEY")
+llm = LLMAssistant(api_token=os.getenv("CLOUDFLARE_API_KEY"))
 
-@app.get("/tasks", response_model=list[Task])
+@app.get("/tasks")
 def get_tasks():
     return data.get_all()
 
-@app.post("/tasks", response_model=Task)
+@app.post("/tasks")
 def create_task(task: Task):
-    # Получаем решение от LLM
     solution = llm.task_llm(task.title)
-    # Добавляем его к тексту задачи
     task.title += f"\n\n💡 Решение от LLM:\n{solution}"
     data.add(task)
     return task
