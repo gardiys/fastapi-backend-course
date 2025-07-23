@@ -6,6 +6,7 @@ from http.client import HTTPException
 
 from cloud import CloudStorage
 from schemas import Task
+from llm import LLMAssistant
 
 app = FastAPI()
 load_dotenv()
@@ -15,12 +16,18 @@ data = CloudStorage(
     secret_key=os.getenv("SECRET_KEY")
 )
 
+llm = LLMAssistant(api_token="CLOUDFLARE_API_KEY")
+
 @app.get("/tasks", response_model=list[Task])
 def get_tasks():
     return data.get_all()
 
 @app.post("/tasks", response_model=Task)
 def create_task(task: Task):
+    # Получаем решение от LLM
+    solution = llm.task_llm(task.title)
+    # Добавляем его к тексту задачи
+    task.title += f"\n\n💡 Решение от LLM:\n{solution}"
     data.add(task)
     return task
 
