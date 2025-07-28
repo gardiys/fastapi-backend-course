@@ -38,7 +38,7 @@ class SaveJsonDB(BaseHTTPClient):
         super().__init__(base_url, timeout)
 
     def json_to_task(self,data:dict|list[dict])->Task|list[Task]:
-        if type(data) == list:
+        if isinstance(data, list):
             return [Task.model_validate(item) for item in data]
         return Task.model_validate(data)
 
