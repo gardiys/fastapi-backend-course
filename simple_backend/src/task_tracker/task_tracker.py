@@ -2,7 +2,7 @@ import json
 from typing import List
 from model import Task
 
-class Tack_tracker:
+class Save_Json:
     def __init__(self,file_path):
         self.file_path = file_path
 
@@ -26,3 +26,6 @@ class Tack_tracker:
 
     def task_to_json(self,tasks_: List[Task]) -> List[dict]:
         return [task.dict() for task in tasks_]
+
+
+

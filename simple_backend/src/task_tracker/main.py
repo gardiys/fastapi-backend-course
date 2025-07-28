@@ -1,14 +1,14 @@
 from fastapi import FastAPI,HTTPException
 from typing import List
 from model import Task
-from task_tracker import Tack_tracker
+from task_tracker import Save_Json
 
 app = FastAPI()
 
 
 
 FILE_PATH = "tasks.json"
-task_tracker = Tack_tracker(FILE_PATH)
+task_tracker = Save_Json(FILE_PATH)
 
 
 
