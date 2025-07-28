@@ -4,6 +4,9 @@ from model import Task
 import requests
 from fastapi import HTTPException
 
+from BaseHTTPClient import BaseHTTPClient
+
+
 class Save_Json:
     def __init__(self,file_path):
         self.file_path = file_path
@@ -30,40 +33,46 @@ class Save_Json:
         return [task.dict() for task in tasks_]
 
 
-class SaveJsonDB:
-    def __init__(self, url):
-        self.url = url
+class SaveJsonDB(BaseHTTPClient):
+    def __init__(self, base_url: str, timeout: int):
+        super().__init__(base_url, timeout)
+
+    def json_to_task(self,data:dict|list[dict])->Task|list[Task]:
+        if type(data) == list:
+            return [Task.model_validate(item) for item in data]
+        return Task.model_validate(data)
+
+
+
+
+
     def load_tasks(self) -> List[Task]:
         try:
-            response = requests.get(f'{self.url}tasks',timeout=5)
-            response.raise_for_status()
-            return [Task.model_validate(item) for item in response.json()]
+            tasks_json = self.get("tasks")
+            return self.json_to_task(tasks_json)
         except requests.exceptions.RequestException as e:
             raise e
 
     def update_task_id(self,id:int,task:Task)->Task:
         try:
             data = task.model_dump()
-            response = requests.put(f'{self.url}tasks/{id}',json=data,timeout=5)
-            response.raise_for_status()
-            return Task.model_validate(response.json())
+            task_json = self.put(f"tasks/{id}",data)
+            return self.json_to_task(task_json)
         except requests.exceptions.RequestException:
             raise HTTPException(status_code=404, detail="Task not found")
 
     def delete_task_id(self,id:int)->Task:
         try:
-            response = requests.delete(f"{self.url}tasks/{id}")
-            response.raise_for_status()
-            return Task.model_validate(response.json())
+            task_json = self.delete(f"tasks/{id}")
+            return self.json_to_task(task_json)
         except requests.exceptions.RequestException:
             raise HTTPException(status_code=404, detail="Task not found")
 
     def create_task(self,task:Task) -> Task:
         try:
             data = task.model_dump()
-            response = requests.post(f"{self.url}tasks",json=data,timeout=5)
-            response.raise_for_status()
-            return Task.model_validate(response.json())
+            task_json = self.post("tasks",data)
+            return self.json_to_task(task_json)
         except requests.exceptions.RequestException as e:
             raise e
 

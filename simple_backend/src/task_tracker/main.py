@@ -1,14 +1,15 @@
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI
 from typing import List
 from model import Task
-from SaveJson import Save_Json, SaveJsonDB
+from SaveJson import  SaveJsonDB
+from simple_backend.src.task_tracker.Config import Config
 from СloudflareWorkersAI import CloudflareWorkersAi
 
 app = FastAPI()
-AI_agent  = {"API_BASE_URL":"https://api.cloudflare.com/client/v4/accounts/f901bd0d9efbd69cdeec4c4e1b5f6e61/ai/run/",
-             "API_TOKEN":"1QBo1ggCU54a6GNkWio7Mshys6qsZ9TKsG-27UmV","model":"@cf/meta/llama-3-8b-instruct"}
+config = Config()
+AI_agent  = config.get_ai_agent()
 
-save_json_db = SaveJsonDB('https://688719b8071f195ca97f3e74.mockapi.io/')
+save_json_db = SaveJsonDB(config.get_url_DB(),5)
 
 
 @app.get("/tasks",response_model=List[Task])
@@ -17,7 +18,7 @@ def get_tasks():
 
 @app.post("/tasks",response_model=Task)
 def create_task(task:Task):
-    task_ai = CloudflareWorkersAi(task,AI_agent)
+    task_ai = CloudflareWorkersAi(task,AI_agent,5)
     task = task_ai.send_task_ai()
     return save_json_db.create_task(task)
 
