@@ -32,3 +32,11 @@
     также возможно использование Optimistic update с версионированием - это когда перед проверкой смотрим не изменились ли данные
     с момента,когда их последний раз видели
 
+# Запуск проекта
+
+### Для запуска проекта создайте фаил .env по шаблону .env_example 
+#### Тестовые данные конфигурации
+    API_BASE_URL = https://api.cloudflare.com/client/v4/accounts/f901bd0d9efbd69cdeec4c4e1b5f6e61/ai/run/
+    API_TOKEN = 1QBo1ggCU54a6GNkWio7Mshys6qsZ9TKsG-27UmV
+    model = @cf/meta/llama-3-8b-instruct
+    DB_URL = https://688719b8071f195ca97f3e74.mockapi.io/

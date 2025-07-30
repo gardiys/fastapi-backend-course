@@ -12,7 +12,7 @@ class Config:
             "API_TOKEN": os.getenv("API_TOKEN"), "model": os.getenv("model")}
         return ai_agent
 
-    def get_url_DB(self):
+    def get_url_DB(self)->str:
         return os.getenv("DB_URL")
 
 
