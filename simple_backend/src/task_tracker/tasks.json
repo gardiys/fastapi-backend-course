@@ -1,1 +1,57 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 2,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 3,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 4,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 5,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 6,
+    "title": "Reboot\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 7,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 8,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 9,
+    "title": "Sort a list of numbers\n\nSolution: (Error fetching solution.)",
+    "status": "new"
+  },
+  {
+    "id": 10,
+    "title": "Sort a list of numbers\n\nSolution: I'd be happy to help you with that. Here's a step-by-step guide on how to sort a list of numbers:\n\n**Task:** Sort the following list of numbers in ascending order:\n\n`[5, 2, 8, 3, 1, 6, 4]`\n\n**Step 1: Understand the task**\nMake sure you understand what \"sorting\" means. In this case, we need to arrange the numbers in the list in order from smallest to largest.\n\n**Step 2: Identify the sorting method**\nThere are several ways to sort a list of numbers. For this example, we'll use the simplest method: **Bubble Sort**.\n\n**Step 3: Initialize the list**\nWrite down the original list of numbers:\n\n`[5, 2, 8, 3, 1, 6, 4]`\n\n**Step 4: Compare adjacent elements**\nStart by comparing the first two elements: `5` and `2`. Since `2` is smaller than `5`, swap them:\n\n`[2, 5, 8, 3, 1, 6, 4]`\n\n**Step 5: Compare adjacent elements (again)**\nMove on to the next pair",
+    "status": "new"
+  },
+  {
+    "id": 11,
+    "title": "Sort a list of numbers\n\nSolution: Here's a step-by-step guide on how to sort a list of numbers:\n\n**Task:** Sort a list of numbers\n\n**Step 1:** Write down the list of numbers you want to sort\n\nFor example: 5, 2, 8, 3, 1, 4, 6, 7\n\n**Step 2:** Determine the sorting order\n\nYou can choose to sort the list in either ascending order (smallest to largest) or descending order (largest to smallest). For this example, let's sort the list in ascending order.\n\n**Step 3:** Compare the first two numbers in the list\n\nCompare the first number (5) with the second number (2). Since 2 is smaller than 5, swap their positions.\n\nNew list: 2, 5, 8, 3, 1, 4, 6, 7\n\n**Step 4:** Compare the next two numbers in the list\n\nCompare the second number (5) with the third number (8). Since 5 is smaller than 8, do nothing and move on to the next pair.\n\n**Step 5:** Continue comparing and swapping numbers in the list\n\nRepeat step 4 until you reach the end of",
+    "status": "new"
+  }
+]
