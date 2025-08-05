@@ -1,4 +1,3 @@
-import requests
 
 from schemas import Task
 from base_client import BaseHTTPClient

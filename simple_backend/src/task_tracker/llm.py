@@ -1,4 +1,3 @@
-import requests
 
 from base_client import BaseHTTPClient
 
