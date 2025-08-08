@@ -1,11 +1,30 @@
+# main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 from storage import FileStorage
+from llm_client import CloudflareLLMClient
+import os
 
 app = FastAPI()
 
 storage = FileStorage()
+
+API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
+ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+
+try:
+    if API_TOKEN and ACCOUNT_ID:
+        llm_client = CloudflareLLMClient(API_TOKEN, ACCOUNT_ID)
+        llm_enabled = True
+    else:
+        llm_client = None
+        llm_enabled = False
+        print("Cloudflare API ключи не найдены. LLM функциональность отключена.")
+except Exception as e:
+    llm_client = None
+    llm_enabled = False
+    print(f"Не удалось инициализировать LLM клиент: {e}")
 
 class Task(BaseModel):
     id: str
@@ -23,10 +42,25 @@ def get_tasks():
 
 @app.post("/tasks", response_model=Task)
 def create_task(task: Task):
+
+    if llm_enabled and llm_client:
+        prompt = f"Объясни, как решить следующую задачу: {task.title}. Предложи пошаговое решение."
+        
+        llm_response = llm_client.ask_llm(prompt)
+        
+        # Если получили ответ от LLM, добавляем его к задаче
+        if llm_response:
+            task.title = f"{task.title}\n\nРешение от AI:\n{llm_response}"
+        else:
+            task.title = f"{task.title}\n\n(Не удалось получить решение от AI)"
+    else:
+        task.title = f"{task.title}\n\n(AI функциональность недоступна - проверьте настройки API)"
+    
     tasks_data = storage.load_tasks()
     task_dict = task.model_dump()
     tasks_data.append(task_dict)
     storage.save_tasks(tasks_data)
+    
     return task
 
 @app.put("/tasks/{task_id}", response_model=Task)
