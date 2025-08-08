@@ -1,45 +1,48 @@
-import requests
 from typing import Optional
-import os
+from base_client import BaseHTTPClient
 
-class CloudflareLLMClient:
-    def __init__(self, api_token: str = None, account_id: str = None):
-        self.api_token = api_token or os.getenv("xQ2khCp_9Qu64OnHAv4LUh2nKnk1WpSKCgYqSdnQ")
-        self.account_id = account_id or os.getenv("813f8bf4062b54be426656c53d20d298")
+class CloudflareLLMClient(BaseHTTPClient):
+    """Клиент для работы с Cloudflare Workers AI API"""
+    
+    def __init__(self, api_token: str, account_id: str):
+        self.api_token = api_token
+        self.account_id = account_id
+        base_url = "https://api.cloudflare.com/client/v4"
+        super().__init__(base_url)
         
-        if not self.api_token or not self.account_id:
-            raise ValueError("Необходимо указать API токен и Account ID для Cloudflare")
-        
-        self.base_url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/@cf/meta/llama-3.1-8b-instruct"
         self.headers = {
-            "Authorization": f"Bearer {self.api_token}",
+            "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json"
         }
+        # Исправлено: используем self.account_id
+        self.model_endpoint = f"/accounts/{self.account_id}/ai/run/@cf/meta/llama-3.1-8b-instruct"
+
+    def load_tasks(self):
+        """
+        Этот метод не используется для LLM, но должен быть реализован
+        из-за абстрактного базового класса
+        """
+        raise NotImplementedError("LLM клиент не поддерживает загрузку задач")
+
+    def save_tasks(self, data):
+        """
+        Этот метод не используется для LLM, но должен быть реализован
+        из-за абстрактного базового класса
+        """
+        raise NotImplementedError("LLM клиент не поддерживает сохранение задач")
 
     def ask_llm(self, prompt: str) -> Optional[str]:
         """
         Отправляет запрос к LLM Cloudflare и возвращает ответ
         """
-        try:
-            payload = {
-                "prompt": prompt
-            }
-            
-            response = requests.post(
-                self.base_url,
-                headers=self.headers,
-                json=payload,
-                timeout=30 
-            )
-            
-            response.raise_for_status()
-            result = response.json()
-            
-            return result.get("result", {}).get("response")
-            
-        except requests.RequestException as e:
-            print(f"Ошибка при запросе к Cloudflare LLM: {e}")
-            return None
-        except Exception as e:
-            print(f"Неожиданная ошибка: {e}")
-            return None
+        kwargs = {
+            "headers": self.headers,
+            "json": {"prompt": prompt},
+            "timeout": 30
+        }
+        
+        response = self._make_request("POST", self.model_endpoint, **kwargs)
+        
+        if response:
+            return response.get("result", {}).get("response")
+        return None

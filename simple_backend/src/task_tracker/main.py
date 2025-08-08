@@ -1,10 +1,11 @@
-# main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
-from storage import FileStorage
-from llm_client import CloudflareLLMClient
 import os
+
+from storage import FileStorage
+
+from llm_client import CloudflareLLMClient
 
 app = FastAPI()
 
@@ -42,13 +43,11 @@ def get_tasks():
 
 @app.post("/tasks", response_model=Task)
 def create_task(task: Task):
-
     if llm_enabled and llm_client:
         prompt = f"Объясни, как решить следующую задачу: {task.title}. Предложи пошаговое решение."
         
         llm_response = llm_client.ask_llm(prompt)
         
-        # Если получили ответ от LLM, добавляем его к задаче
         if llm_response:
             task.title = f"{task.title}\n\nРешение от AI:\n{llm_response}"
         else:
