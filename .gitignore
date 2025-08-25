@@ -129,6 +129,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+simple_backend/src/task_tracker/simple_backend_venv
 
 # Spyder project settings
 .spyderproject
