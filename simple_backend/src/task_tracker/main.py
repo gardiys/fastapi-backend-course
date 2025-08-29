@@ -26,8 +26,6 @@ class Task(TaskAdd):
 
 
 class TaskUpdate(BaseModel):
-    # id: int = Field(json_schema_extra={"readOnly": True})
-    # name: str = Field(json_schema_extra={"readOnly": True}, exclude=True)
     description: Optional[str] = Field(None, description="Описание задачи")
     status: Optional[TaskStatus] = Field(None, description="Статус задачи")
 
