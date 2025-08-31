@@ -5,6 +5,9 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 import os
 import json
 
+import requests
+
+
 class absDB():
     @abstractmethod
     def get_all(self) -> List[Dict[str, Any]]:
@@ -51,7 +54,6 @@ class ListDB(absDB):
             self.tasks[id].update(data)
             return True
         return False
-
 
 class FileDB(absDB):
     def __init__(self) -> None:
@@ -117,15 +119,65 @@ class FileDB(absDB):
 
         return data
 
+class CloudDB(absDB):
+    def __init__(self) -> None:
+        self.root = 'https://api.jsonbin.io/v3'
+        self.key_api = '$2a$10$gkEEHNtdmq7FCAUiGF88k.IDmciahKhZmVL7ZBfbANA6US9nsQsu6'
+        self.key_bin = '68b1c53ed0ea881f406a555a'
+    
+    def get_all(self) -> List[Dict[str, Any]]:
+        return list(self.__get_json().values())
+
+    def get(self, id) -> Dict[str, Any] | None:
+        old_data = self.__get_json()
+        if str(id) in old_data:
+            return old_data[str(id)]
+        return None
+
+    def add(self, id, data) -> bool:
+        old_data = self.__get_json()
+        old_data[str(id)] = data
+        self.__post_json(old_data)
+        return True
+    
+    def delete(self, id) -> bool:
+        data = self.__get_json()
+        if str(id) in data:
+            del data[str(id)]
+            self.__post_json(data)
+            return True
+        return False
+
+    def update(self, id, data) -> bool:
+        all_data = self.__get_json()
+        if str(id) in all_data:
+            all_data[str(id)] = data
+            self.__post_json(all_data)
+            return True
+        return False
 
 
-list_db = FileDB()
-# list_db.delete(2)
-print(list_db.get_all())
+    def __get_json(self):
+        url = f"{self.root}/b/{self.key_bin}"
+        headers = {
+            'X-Master-Key': self.key_api,
+            'X-Bin-Meta': 'false'
+        }
+        req = requests.get(url, headers=headers)
+        if req.status_code != 200:
+            raise Exception("API Error")
+        return req.json()
+        
+    def __post_json(self, data):
+        new_data = json.dumps(data)
 
-# list_db.add(1, {1:1})
-# list_db.add(2, {1:1})
-# list_db.update(2, {4:1})
-print(list_db.get_all())
-print(list_db.get_all())
+        url = f"{self.root}/b/{self.key_bin}"
+        headers = {
+            'Content-Type': 'application/json',
+            'X-Master-Key': self.key_api,
+        }
+        req = requests.put(url,data=new_data, headers=headers)
+        if req.status_code != 200:
+            raise Exception("API Error")
+        return True
 
