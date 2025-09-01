@@ -4,9 +4,23 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 import os
 import json
+import functools
 
 import requests
 
+
+def id_to_str(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'id' in kwargs:
+            kwargs['id'] = str(kwargs['id'])
+            return func(*args, **kwargs)
+        elif len(kwargs) > 1:
+            new_args = (args[0], str(args[1])) + args[2:]
+            return func(*new_args, **kwargs)
+        else:
+            return func(*args, **kwargs)
+    return wrapper
 
 class absDB():
     @abstractmethod
@@ -40,6 +54,8 @@ class ListDB(absDB):
         return self.tasks[id]
 
     def add(self, id, data) -> bool:
+        if str(id) in data:
+            return False
         self.tasks[id] = data
         return True
 
@@ -65,32 +81,34 @@ class FileDB(absDB):
         data = self.__read_json()
         return list(data.values())
 
+    @id_to_str
     def get(self, id) -> Dict[str, Any] | None:
         data_from_file = self.__read_json()
-        id = str(id)
         if id in data_from_file:
             return data_from_file[id]
         return None
 
+    @id_to_str
     def add(self, id, data) -> bool:
-
         data_from_file = self.__read_json()
+        if id in data_from_file:
+            return False
         data_from_file[id] = data
         self.__save_json(data_from_file)
         return True
 
+    @id_to_str
     def delete(self, id) -> bool:
         data_from_file = self.__read_json()
-        id = str(id)
         if id in data_from_file:
             del data_from_file[id]
             self.__save_json(data_from_file)
             return True
         return False
 
+    @id_to_str
     def update(self, id, data):
         data_from_file = self.__read_json()
-        id = str(id)
         if id in data_from_file:
             data_from_file[id] = data
             self.__save_json(data_from_file)
@@ -121,33 +139,40 @@ class FileDB(absDB):
 
 class CloudDB(absDB):
     def __init__(self) -> None:
-        self.root = 'https://api.jsonbin.io/v3'
         self.key_api = '$2a$10$gkEEHNtdmq7FCAUiGF88k.IDmciahKhZmVL7ZBfbANA6US9nsQsu6'
-        self.key_bin = '68b1c53ed0ea881f406a555a'
-    
+        key_bin = '68b1c53ed0ea881f406a555a'
+        root = 'https://api.jsonbin.io/v3'
+        self.url = f"{root}/b/{key_bin}"
+
     def get_all(self) -> List[Dict[str, Any]]:
         return list(self.__get_json().values())
 
+    @id_to_str
     def get(self, id) -> Dict[str, Any] | None:
         old_data = self.__get_json()
-        if str(id) in old_data:
-            return old_data[str(id)]
+        if id in old_data:
+            return old_data[id]
         return None
 
+    @id_to_str
     def add(self, id, data) -> bool:
         old_data = self.__get_json()
-        old_data[str(id)] = data
+        if id in old_data:
+            return False
+        old_data[id] = data
         self.__post_json(old_data)
         return True
     
+    @id_to_str
     def delete(self, id) -> bool:
         data = self.__get_json()
-        if str(id) in data:
-            del data[str(id)]
+        if id in data:
+            del data[id]
             self.__post_json(data)
             return True
         return False
 
+    @id_to_str
     def update(self, id, data) -> bool:
         all_data = self.__get_json()
         if str(id) in all_data:
@@ -158,12 +183,13 @@ class CloudDB(absDB):
 
 
     def __get_json(self):
-        url = f"{self.root}/b/{self.key_bin}"
         headers = {
             'X-Master-Key': self.key_api,
-            'X-Bin-Meta': 'false'
+            'X-Bin-Meta': 'false',
         }
-        req = requests.get(url, headers=headers)
+
+        req = requests.get(self.url, headers=headers)
+
         if req.status_code != 200:
             raise Exception("API Error")
         return req.json()
@@ -171,13 +197,15 @@ class CloudDB(absDB):
     def __post_json(self, data):
         new_data = json.dumps(data)
 
-        url = f"{self.root}/b/{self.key_bin}"
         headers = {
-            'Content-Type': 'application/json',
             'X-Master-Key': self.key_api,
+            'Content-Type': 'application/json',
         }
-        req = requests.put(url,data=new_data, headers=headers)
+
+        req = requests.put(self.url ,data=new_data, headers=headers)
+
         if req.status_code != 200:
             raise Exception("API Error")
         return True
 
+list_db = FileDB()

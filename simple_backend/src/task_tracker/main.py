@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationError
 from db import list_db
-from typing import List, Dict, Any, Optional, Union
+from typing import List
 
-from utils import TaskController
+from utils import TaskController, Worker_AI
 
 app = FastAPI()
 task_controller = TaskController(list_db)
@@ -11,17 +11,21 @@ task_controller = TaskController(list_db)
 class Task(BaseModel):
     id: int
     title: str = Field(default=..., min_length=1, max_length=50, description="Название задачи, от 1 до 50 символов")
+    text: str = Field(default=..., min_length=1, max_length=500, description="Текст задачи, от 1 до 500 символов")
     status: str = Field(default=..., min_length=1, max_length=50, description="Статус задачи, от 1 до 50 символов")
 
 @app.get("/tasks")
 def get_tasks() -> List[Task]:
     list_task = task_controller.get_all_task()
+    print('TASK', list_task)
     tasks = [Task(**task) for task in list_task]       
     return tasks
     
 
 @app.post("/tasks")
 def create_task(task: Task):
+    ai = Worker_AI()
+    task.text += f'\nРешение: {ai.creating_solution_to_task(task.text)}\n'
     task_controller.add_task(task.model_dump())
     return task
 
