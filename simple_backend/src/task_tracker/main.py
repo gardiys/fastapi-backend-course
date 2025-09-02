@@ -1,65 +1,39 @@
-from enum import Enum
-from typing import Optional, Annotated
-from fastapi import FastAPI, Depends
-from pydantic import BaseModel, Field
+from fastapi import HTTPException, FastAPI, Depends
+from rest_framework import status
+from typing import Annotated
+from task import Task, TaskAdd, TaskUpdate
+from task_json import TasksJson
 
 app = FastAPI()
 
-tasks = []
-tasks_id = 0
-
-
-class TaskStatus(str, Enum):
-    NOT_STARTED = "Не выполнено"
-    IN_PROGRESS = "В процессе"
-    COMPLETED = "Выполнено"
-
-
-class TaskAdd(BaseModel):
-    name: str = Field()
-    description: Optional[str] = Field(None, description="Описание задачи")
-    status: Optional[TaskStatus] = Field(TaskStatus.NOT_STARTED, description="Статус задачи")
-
-
-class Task(TaskAdd):
-    id: int
-
-
-class TaskUpdate(BaseModel):
-    description: Optional[str] = Field(None, description="Описание задачи")
-    status: Optional[TaskStatus] = Field(None, description="Статус задачи")
+tasks = TasksJson("data.json")
 
 
 @app.get("/tasks")
 def get_tasks():
-    return tasks
+    return tasks.get_tasks()
 
 
 @app.post("/tasks")
 def create_task(task: Annotated[TaskAdd, Depends()]):
-    global tasks_id
-    tasks_id += 1
-    obj = Task(id=tasks_id, **task.dict())
-    tasks.append(obj)
+    obj = Task(**task.dict())
+    tasks.add(obj)
     return f'Ok'
 
 
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, task: Annotated[TaskUpdate, Depends()]):
-    for obj in tasks:
-        if task_id != obj.id:
-            continue
-        obj.description = task.description if task.description else obj.description
-        obj.status = task.status if task.status else obj.status
-        return 'ok'
-    raise KeyError("Задача с таким id несуществует")
+    try:
+        tasks.up_data(task_id, task)
+        return f'Ok'
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Задача с task_id {task_id} не найдена")
 
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
-    for obj in tasks:
-        if task_id != obj.id:
-            continue
-        tasks.remove(obj)
-        return 'ok'
-    raise KeyError("Задача с таким id несуществует")
+    try:
+        tasks.delete(task_id)
+        return 'Ok'
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Задача с ID {task_id} не найдена")
