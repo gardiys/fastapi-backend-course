@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Optional, ClassVar
+import uuid
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -16,14 +17,12 @@ class TaskAdd(BaseModel):
 
 
 class Task(TaskAdd):
-    id: int
-    _next_id: ClassVar[int] = 1
+    id: str
 
     def __init__(self, **data):
         # Если ID не передан, генерируем автоматически
         if 'id' not in data:
-            data['id'] = self.__class__._next_id
-            self.__class__._next_id += 1
+            data['id'] = str(uuid.uuid4())
         super().__init__(**data)
 
 

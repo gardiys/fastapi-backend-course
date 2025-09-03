@@ -1,17 +1,17 @@
-from fastapi import HTTPException, FastAPI, Depends
+from fastapi import HTTPException, Depends, FastAPI
 from rest_framework import status
 from typing import Annotated
 from task import Task, TaskAdd, TaskUpdate
-from task_json import TasksJson
+from task_json import TasksJsonbin
 
 app = FastAPI()
 
-tasks = TasksJson("data.json")
+tasks = TasksJsonbin()
 
 
 @app.get("/tasks")
 def get_tasks():
-    return tasks.get_tasks()
+    return tasks.get_all_tasks()
 
 
 @app.post("/tasks")
@@ -22,7 +22,7 @@ def create_task(task: Annotated[TaskAdd, Depends()]):
 
 
 @app.put("/tasks/{task_id}")
-def update_task(task_id: int, task: Annotated[TaskUpdate, Depends()]):
+def update_task(task_id: str, task: Annotated[TaskUpdate, Depends()]):
     try:
         tasks.up_data(task_id, task)
         return f'Ok'
@@ -31,7 +31,7 @@ def update_task(task_id: int, task: Annotated[TaskUpdate, Depends()]):
 
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
+def delete_task(task_id: str):
     try:
         tasks.delete(task_id)
         return 'Ok'

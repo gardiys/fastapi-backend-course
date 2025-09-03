@@ -1,3 +1,5 @@
 fastapi
 uvicorn[standard]
 djangorestframework
+requests
+python-dotenv
