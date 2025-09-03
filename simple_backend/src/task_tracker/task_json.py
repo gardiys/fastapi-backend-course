@@ -1,52 +1,17 @@
-import os
-from dotenv import load_dotenv
 import requests
 from task import Task, TaskUpdate
-from typing import List, Dict, Optional
-
-load_dotenv()
+from typing import List, Dict
 
 
 class TasksJsonbin:
 
-    def __init__(self, api_key: Optional[str] = None, bin_id: Optional[str] = None):
-        self.__api_key = api_key or os.getenv('JSONBIN_API_KEY')
-        self.__bin_id = bin_id or os.getenv('JSONBIN_BIN_ID')
-
-        if not self.__api_key:
-            raise ValueError(
-                "Требуется ключ API. Укажите JSONBIN_API_KEY в env-файле или передайте в качестве аргумента"
-            )
-
+    def __init__(self, api_key: str, bin_id: str):
+        self.url = f"https://api.jsonbin.io/v3/b/{bin_id}"
         self.headers = {
             'Content-Type': 'application/json',
-            'X-Master-Key': self.__api_key,
-            'X-Access-Key': self.__api_key
+            'X-Master-Key': api_key,
+            'X-Access-Key': api_key
         }
-
-        if self.__bin_id:
-            self.url = f"https://api.jsonbin.io/v3/b/{self.__bin_id}"
-        else:
-            # Создаем новый bin автоматически
-            self.url = self._create_new_bin()
-            # Сохраняем ID newly created bin для возможного дальнейшего использования
-            self.__bin_id = self.url.split('/')[-1]
-
-    def _create_new_bin(self):
-        try:
-            response = requests.post(
-                'https://api.jsonbin.io/v3/b',
-                json={'tasks': []},
-                headers=self.headers
-            )
-            response.raise_for_status()
-            bin_data = response.json()
-            bin_id = bin_data['metadata']['id']
-            print(f"Создан новый bin с ID: {bin_id}")
-            # Перезаписываем .env файл для сохранения JSONBIN_BIN_ID
-            return f"https://api.jsonbin.io/v3/b/{bin_id}"
-        except Exception as error:
-            raise print(f"Ошибка при создании bin: {error}")
 
     def _read_data(self) -> Dict:
         response = requests.get(url=self.url, headers=self.headers)

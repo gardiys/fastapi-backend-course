@@ -18,6 +18,7 @@ class TaskAdd(BaseModel):
 
 class Task(TaskAdd):
     id: str
+    solution_llm: Optional[str] = Field(None, description="Решение задачи от llm ассистента")
 
     def __init__(self, **data):
         # Если ID не передан, генерируем автоматически
