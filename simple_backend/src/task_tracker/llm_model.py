@@ -1,7 +1,8 @@
 import requests
+from abc_model import BaseHTTPClient
 
 
-class LLMAssistant:
+class LLMAssistant(BaseHTTPClient):
 
     def __init__(self, api_key: str, llm_id: str, model: str = "@cf/meta/llama-3-8b-instruct"):
         self.url = f"https://api.cloudflare.com/client/v4/accounts/{llm_id}/ai/run/"
@@ -11,7 +12,7 @@ class LLMAssistant:
             "Content-Type": "application/json"
         }
 
-    def assist_llm(self, task_description: str) -> str:
+    def request(self, task_description: str) -> str:
         inputs = {
             "role": "user",
             "prompt": f"Твоя задача:\n{task_description}"

@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from fastapi import HTTPException, Depends, FastAPI
 from rest_framework import status
 from typing import Annotated
-from task import Task, TaskAdd, TaskUpdate
-from task_json import TasksJsonbin
+from task_model import Task, TaskAdd, TaskUpdate
+from task_json_model import TasksJsonbin
 from llm_model import LLMAssistant
 
 app = FastAPI()
@@ -27,7 +27,9 @@ def get_tasks():
 
 @app.post("/tasks")
 def create_task(task: Annotated[TaskAdd, Depends()]):
-    solution_llm = llm_assistant.assist_llm(task.description)
+    solution_llm = None
+    if task.description != None:
+        solution_llm = llm_assistant.request(task.description)
     obj = Task(**task.dict())
     obj.solution_llm = solution_llm
     tasks.add(obj)
@@ -37,7 +39,11 @@ def create_task(task: Annotated[TaskAdd, Depends()]):
 @app.put("/tasks/{task_id}")
 def update_task(task_id: str, task: Annotated[TaskUpdate, Depends()]):
     try:
-        tasks.up_data(task_id, task)
+        dct_up = {key: value for key, value in task.__dict__.items() if value != None}
+        if dct_up.get('description') != None:
+            solution_llm = llm_assistant.request(task.description)
+            dct_up.setdefault('solution_llm', solution_llm)
+        tasks.up_data(task_id, dct_up)
         return f'Ok'
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Задача с task_id {task_id} не найдена")
