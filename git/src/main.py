@@ -22,8 +22,8 @@ def save_books(books, filename="library.json"):
     """
     with open(filename, "w", encoding="utf-8") as file:
         json.dump(books, file, ensure_ascii=False, indent=4)
-        
-        
+
+
 def list_books(books):
     """
     Возвращает строку со списком всех книг.
@@ -117,7 +117,7 @@ def main():
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
-                
+
         elif choice == "4":
             print("\nПоиск книг:")
             keyword = input(
@@ -129,7 +129,7 @@ def main():
                 print(list_books(found_books))
             else:
                 print("Ничего не найдено.")
-                
+
         elif choice == "5":
             print("Выход из программы.")
             break
