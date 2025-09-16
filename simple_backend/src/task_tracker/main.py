@@ -1,8 +1,13 @@
 from fastapi import FastAPI, Query, HTTPException
-from storage import FileStorage
+from cloud_storage import CloudStorage
 
 app = FastAPI()
-storage = FileStorage()
+
+# Настройте ваш API URL и ключ
+storage = CloudStorage(
+    api_url="https://api.jsonbin.io/v3/b/65a1b2b2dc7465401890a0c1",
+    api_key="$2a$10$нерегнулся"
+)
 
 @app.get("/tasks")
 def get_tasks():
