@@ -1,0 +1,29 @@
+name: Ruff lint
+
+on:
+  push:
+    branches:
+      -main
+      -master
+      -'**/feature/**'
+  pull_request:
+
+jobs:
+  lint:
+    name: Проверка кода Ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout репозитория
+        uses: actions/checkout@v3
+
+      - name: Установить Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Установить Ruff
+        run: pip install ruff
+
+      - name: Запуск Ruff
+        run: ruff check git/src
