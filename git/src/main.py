@@ -14,6 +14,7 @@ def load_books(filename='library.json'):
         except json.JSONDecodeError:
             return []
 
+
 def save_books(books, filename='library.json'):
     """
     Сохранение списка книг в JSON-файл.
@@ -94,6 +95,7 @@ def main():
             # Получаем новый список с добавленной книгой
             new_books = add_book(books, title, author, year)
             books = new_books  # Обновляем переменную, чтобы сохранить изменения
+
             save_books(books)  # Сразу сохраняем в файл
             print("Книга добавлена!")
 
