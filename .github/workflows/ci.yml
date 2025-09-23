@@ -1,0 +1,48 @@
+name: CI (ruff)
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "**.py"
+      - ".github/workflows/**"
+      - "pyproject.toml"
+  pull_request:
+    paths:
+      - "**.py"
+      - ".github/workflows/**"
+      - "pyproject.toml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]   # при желании добавь "3.11"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Show ruff version
+        run: ruff --version
+
+      # Проверка форматирования (аналог black) — только проверяем, не правим
+      - name: Check formatting
+        run: ruff format --check .
+
+      # Линт. Формат вывода понятен интерфейсу GitHub
+      - name: Lint with ruff
+        run: ruff check . --output-format=github --exit-zero=false
