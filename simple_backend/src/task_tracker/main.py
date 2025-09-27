@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import requests
 import json
 import os
-from typing import List
+from typing import List, Any, Dict
 import httpx
 from dotenv import load_dotenv
 
@@ -18,55 +18,80 @@ JSONBIN_BIN_ID = "68d56971d0ea881f408ac1f5"
 CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
 CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
 
+
+class BaseHTTPClient:
+    """Базовый класс для HTTP клиентов"""
+    
+    def __init__(self, base_url: str, headers: Dict[str, str] = None):
+        self.base_url = base_url
+        self.headers = headers or {}
+    
+    def _request_sync(self, method: str, endpoint: str = "", **kwargs) -> Any:
+        """Синхронный HTTP запрос"""
+        url = f"{self.base_url}{endpoint}"
+        try:
+            response = requests.request(method, url, headers=self.headers, **kwargs)
+            print(f"HTTP {method} {url} - Status: {response.status_code}")
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка HTTP запроса: {e}")
+            raise HTTPException(status_code=500, detail=f"Ошибка HTTP: {str(e)}")
+    
+    async def _request_async(self, method: str, endpoint: str = "", **kwargs) -> Any:
+        """Асинхронный HTTP запрос"""
+        url = f"{self.base_url}{endpoint}"
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.request(method, url, headers=self.headers, **kwargs)
+                print(f"Async HTTP {method} {url} - Status: {response.status_code}")
+                response.raise_for_status()
+                return response.json()
+        except httpx.RequestError as e:
+            print(f"Ошибка асинхронного HTTP запроса: {e}")
+            raise HTTPException(status_code=500, detail=f"Ошибка HTTP: {str(e)}")
+
 class Task(BaseModel):
     id: int
     title: str
     completed: bool = False
     ai_help: str = ''
 
-class CloudTaskManager:
+class CloudTaskManager(BaseHTTPClient):
+
     def __init__(self, api_key: str, bin_id: str):
-        self.api_key = api_key
-        self.bin_id = bin_id
-        self.url = f"https://api.jsonbin.io/v3/b/{bin_id}"
-        self.headers = {
+        base_url = f"https://api.jsonbin.io/v3/b/{bin_id}"
+
+        headers = {
             "Content-Type": "application/json",
             "X-Master-Key": api_key
         }
+
+        super().__init__(base_url, headers)
+
+        self.api_key = api_key
+        self.bin_id = bin_id
     
     def load_tasks(self) -> List[Task]:
         """Загрузить задачи из JSONBin.io"""
-        response = requests.get(self.url, headers=self.headers)
-        print(f"Статус ответа: {response.status_code}")  # Для отладки
         
-        if response.status_code == 200:
-            data = response.json()
-            print(f"Полученные данные: {data}")  # Для отладки
+        try:
+            data = self._request_sync('GET')
+
             tasks_data = data['record']
-            return [Task(**task) for task in tasks_data]                   
-        elif response.status_code == 404:
+            return [Task(**task) for task in tasks_data]
+        except HTTPException:
             print("Бин не найден, создаем начальные задачи")
             return self._create_initial_tasks()
-        else:
-            print(f"Ошибка HTTP: {response.status_code}")
-            return self._create_initial_tasks()
+        
+
 
     
     def save_tasks(self, tasks: List[Task]) -> None:
         """Сохранить задачи в JSONBin.io"""
-        try:
-            data = [task.model_dump() for task in tasks]
-            response = requests.put(self.url, json=data, headers=self.headers)
-            
-            if response.status_code == 200:
-                print("Данные успешно сохранены")
-            else:
-                print(f"Ошибка сохранения: {response.status_code} - {response.text}")
-                raise HTTPException(status_code=500, detail="Ошибка сохранения в облаке")
-                
-        except Exception as e:
-            print(f"Ошибка: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка сохранения в облаке")
+        data = [task.model_dump() for task in tasks]
+        self._request_sync("PUT", json=data)
+        print("Данные успешно сохранены")
     
     def _create_initial_tasks(self) -> List[Task]:
         """Создать начальные задачи если бин не существует"""
@@ -87,46 +112,41 @@ class CloudTaskManager:
             return 1
         return max(task.id for task in tasks) + 1
     
-class CloudflareAI:
-    def __init__(self):
-        self.token = CLOUDFLARE_API_TOKEN
-        self.account_id = CLOUDFLARE_ACCOUNT_ID
-        self.url = f"https://api.cloudflare.com/client/v4/accounts/{self.account_id}/ai/run/@cf/meta/llama-3.1-8b-instruct"
+class CloudflareAI(BaseHTTPClient):
+    """Клиент для Cloudflare AI"""
     
+    def __init__(self, api_token: str, account_id: str, model: str = "@cf/meta/llama-3.1-8b-instruct"):
+        base_url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run"
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json"
+        }
+        super().__init__(base_url, headers)
+        self.model = model
+
 
     async def get_ai_help(self, task_title: str) -> str:
         """Получить AI помощь для задачи"""
         try:
             print(f"Отправка запроса к Cloudflare AI...")
-            print(f"URL: {self.url}")
-            print(f"Токен: {self.token[:10]}...")  # Логируем только начало токена
-            print(f"Account ID: {self.account_id}")
+            print(f"URL: {self.base_url}/{self.model}")  # ← Используем base_url из базового класса
+            print(f"Токен: {self.headers['Authorization'][:10]}...")  # ← Токен из headers
+            data = await self._request_async(
+                "POST", 
+                endpoint=f"/{self.model}",
+                json={
+                    "messages": [
+                        {
+                            "role": "user", 
+                            "content": f"Кратко объясни как решить задачу: {task_title}"
+                        }
+                    ]
+                },
+                timeout=30.0
+            )
             
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    self.url,
-                    headers={"Authorization": f"Bearer {self.token}"},
-                    json={
-                        "messages": [
-                            {
-                                "role": "user", 
-                                "content": f"Кратко объясни как решить задачу: {task_title}"
-                            }
-                        ]
-                    },
-                    timeout=30.0
-                )
-                
-                print(f"Статус ответа: {response.status_code}")
-                print(f"Текст ответа: {response.text}")
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    print(f"Полный ответ AI: {result}")
-                    return result.get("result", {}).get("response", "Не удалось получить ответ")
-                else:
-                    print(f"Ошибка API: {response.status_code} - {response.text}")
-                    return f"Ошибка API: {response.status_code}"
+            return data.get("result", {}).get("response", "Не удалось получить ответ")
+                    
                     
         except Exception as e:
             print(f"Ошибка AI: {e}")
@@ -135,7 +155,7 @@ class CloudflareAI:
 
 # Создаем менеджер задач
 task_manager = CloudTaskManager(JSONBIN_API_KEY, JSONBIN_BIN_ID)
-ai_service = CloudflareAI()
+ai_service = CloudflareAI(CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
 
 
 async def add_ai_to_task(task_id: int, task_title: str):
