@@ -1,44 +1,76 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import requests
 import json
 from typing import List
 
 app = FastAPI()
+
+# Конфигурация JSONBin.io
+JSONBIN_API_KEY = "$2a$10$pcwqDUhDIMDVaHFqqn4gCui92e3cFwdyhwt5gxmglbF.Y/FJAHDJG"
+JSONBIN_BIN_ID = "68d56971d0ea881f408ac1f5"
 
 class Task(BaseModel):
     id: int
     title: str
     completed: bool = False
 
-class TaskManager:
-    def __init__(self, filename: str = 'tasks.json'):
-        self.filename = filename
+class CloudTaskManager:
+    def __init__(self, api_key: str, bin_id: str):
+        self.api_key = api_key
+        self.bin_id = bin_id
+        self.url = f"https://api.jsonbin.io/v3/b/{bin_id}"
+        self.headers = {
+            "Content-Type": "application/json",
+            "X-Master-Key": api_key
+        }
     
     def load_tasks(self) -> List[Task]:
-        """Загрузить задачи из файла"""
-        try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                return [Task(**task) for task in data]
-        except (FileNotFoundError, json.JSONDecodeError):
-            # Создаем начальные задачи если файл не существует или поврежден
-            initial_tasks = [
-                {"id": 1, "title": "купить молоко", "completed": False},
-                {"id": 2, "title": "позавтракать", "completed": True},
-                {"id": 3, "title": "позвонить дедушке", "completed": False}
-            ]
-            self._save_tasks_data(initial_tasks)
-            return [Task(**task) for task in initial_tasks]
+        """Загрузить задачи из JSONBin.io"""
+        response = requests.get(self.url, headers=self.headers)
+        print(f"Статус ответа: {response.status_code}")  # Для отладки
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Полученные данные: {data}")  # Для отладки
+            tasks_data = data['record']
+            return [Task(**task) for task in tasks_data]                   
+        elif response.status_code == 404:
+            print("Бин не найден, создаем начальные задачи")
+            return self._create_initial_tasks()
+        else:
+            print(f"Ошибка HTTP: {response.status_code}")
+            return self._create_initial_tasks()
+
     
     def save_tasks(self, tasks: List[Task]) -> None:
-        """Сохранить задачи в файл"""
-        data = [task.model_dump() for task in tasks]
-        self._save_tasks_data(data)
+        """Сохранить задачи в JSONBin.io"""
+        try:
+            data = [task.model_dump() for task in tasks]
+            response = requests.put(self.url, json=data, headers=self.headers)
+            
+            if response.status_code == 200:
+                print("Данные успешно сохранены")
+            else:
+                print(f"Ошибка сохранения: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=500, detail="Ошибка сохранения в облаке")
+                
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            raise HTTPException(status_code=500, detail="Ошибка сохранения в облаке")
     
-    def _save_tasks_data(self, data: list) -> None:
-        """Внутренний метод для сохранения данных"""
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+    def _create_initial_tasks(self) -> List[Task]:
+        """Создать начальные задачи если бин не существует"""
+        print("Создаем начальные задачи...")
+        initial_tasks_data = [
+            {"id": 1, "title": "купить молоко", "completed": False},
+            {"id": 2, "title": "позавтракать", "completed": True},
+            {"id": 3, "title": "позвонить дедушке", "completed": False}
+        ]
+        
+        initial_tasks = [Task(**task) for task in initial_tasks_data]
+        self.save_tasks(initial_tasks)
+        return initial_tasks
     
     def get_next_id(self, tasks: List[Task]) -> int:
         """Получить следующий ID для новой задачи"""
@@ -46,15 +78,14 @@ class TaskManager:
             return 1
         return max(task.id for task in tasks) + 1
 
-# Создаем экземпляр менеджера задач
-task_manager = TaskManager()
+# Создаем менеджер задач
+task_manager = CloudTaskManager(JSONBIN_API_KEY, JSONBIN_BIN_ID)
 
-# GET /tasks - получить все задачи
+# Эндпоинты
 @app.get("/tasks")
 def get_tasks():
     return task_manager.load_tasks()
 
-# POST /tasks - создать новую задачу
 @app.post("/tasks")
 def create_task(title: str):
     tasks = task_manager.load_tasks()
@@ -64,7 +95,6 @@ def create_task(title: str):
     task_manager.save_tasks(tasks)
     return new_task
 
-# PUT /tasks/{id} - обновить задачу
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, title: str = None, completed: bool = None):
     tasks = task_manager.load_tasks()
@@ -78,7 +108,6 @@ def update_task(task_id: int, title: str = None, completed: bool = None):
             return task
     return {"error": "Задача не найдена"}
 
-# DELETE /tasks/{id} - удалить задачу
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
     tasks = task_manager.load_tasks()
@@ -88,3 +117,10 @@ def delete_task(task_id: int):
             task_manager.save_tasks(tasks)
             return {"message": f"Задача '{deleted_task.title}' удалена"}
     return {"error": "Задача не найдена"}
+
+@app.on_event("startup")
+async def startup_event():
+    """Проверяем соединение при запуске"""
+    print("Проверка соединения с JSONBin.io...")
+    tasks = task_manager.load_tasks()
+    print(f"Загружено задач: {len(tasks)}")
