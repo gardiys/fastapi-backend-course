@@ -1,0 +1,53 @@
+name: Python Code Quality with Ruff
+
+# Когда запускать workflow
+on:
+  # При пуше в ветки main или master
+  push:
+    branches: [ main, master ]
+  # При создании или обновлении pull request в main или master
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  ruff-quality-check:
+    # Название job для отображения в интерфейсе
+    name: Ruff Code Quality Check
+    # Запускать на последней Ubuntu
+    runs-on: ubuntu-latest
+    
+    # Стратегия выполнения
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    
+    steps:
+    # Шаг 1: Получить код из репозитория
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    # Шаг 2: Установить Python
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    # Шаг 3: Обновить pip и установить ruff
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff
+    
+    # Шаг 4: Проверить синтаксис и качество кода
+    - name: Run Ruff linting (check for errors)
+      run: |
+        echo "Running ruff check..."
+        ruff check .
+        echo "Ruff check completed successfully!"
+    
+    # Шаг 5: Проверить форматирование кода
+    - name: Check code formatting
+      run: |
+        echo "Checking code formatting..."
+        ruff format --check .
+        echo "Formatting check completed!"
