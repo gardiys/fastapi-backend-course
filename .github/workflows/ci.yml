@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, second-branch ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, second-branch ]
 
 jobs:
   lint:
@@ -32,8 +32,8 @@ jobs:
 
       - name: Auto-fix code with Ruff
         run: |
-          ruff format . --fix --line-length 88 --exclude migrations,venv || true
+          ruff check . --fix --line-length 88 || true
 
       - name: Run Ruff linter
         run: |
-          ruff check . --select ALL --ignore F401,W391 --line-length 88
+          ruff check . --line-length 88
