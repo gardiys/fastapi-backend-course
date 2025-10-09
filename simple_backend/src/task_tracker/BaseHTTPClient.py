@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 class BaseHTTPClient(ABC):
 
     def __init__(self, base_url: str, headers: dict = None):
-        self.base_url = base_url.rstrip("/")  # убираем лишний слэш
+        self.base_url = base_url.rstrip("/")
         self.headers = headers or {}
 
     def _get(self, endpoint: str = "", **kwargs):
