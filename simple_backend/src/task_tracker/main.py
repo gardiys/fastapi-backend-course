@@ -1,6 +1,5 @@
 '''backend'''
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from storage_gist import GistStorage
 from Cloudflare import Cloudflare
 app = FastAPI()
