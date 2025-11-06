@@ -1,0 +1,4 @@
+*.idea/
+*.json
+*.env
+*.test_cloudflare_ai.py
