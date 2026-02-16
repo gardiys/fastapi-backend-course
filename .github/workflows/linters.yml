@@ -1,0 +1,24 @@
+name: Ruff Lint Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ruff:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check syntax (ruff check)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check --output-format=github"
+
+      - name: Check formatting (ruff format)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
