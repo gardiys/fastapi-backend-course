@@ -1,0 +1,39 @@
+[project]
+name = "fastapi-backend-course"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "paul",email = "pavelbarkhotov@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ruff (>=0.15.4,<0.16.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "app"]
+extend-exclude = [".venv", "venv", "build", "dist", "__pycache__", "migrations"]
+
+[tool.ruff.lint]
+# Набор правил: базовые ошибки/предупреждения + сортировка импортов + апгрейды и упрощения
+select = ["E4", "E7", "E9", "F", "W", "I", "UP", "B", "SIM"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "src"]
+combine-as-imports = true
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"     # "double" | "single"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
