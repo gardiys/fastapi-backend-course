@@ -105,6 +105,7 @@ def main():
             if len(new_books) < len(books):
                 books = new_books
                 save_books(books)
+
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
@@ -128,3 +129,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
