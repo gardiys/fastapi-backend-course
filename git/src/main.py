@@ -124,7 +124,6 @@ def main():
             else:
                 print("Ничего не найдено.")
 
-        elif choice == '6':
         elif choice == '5':
             print("Выход из программы.")
             break
