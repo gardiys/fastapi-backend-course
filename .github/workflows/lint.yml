@@ -1,0 +1,33 @@
+name: Lint Python code
+
+on:
+  push:
+    branches:
+      - main
+      - pull-request-task
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.1"
+
+      - name: Install ruff
+        run: pip install ruff==0.15.8
+
+      - name: Run ruff lint
+        run: ruff check git/src
+
+      - name: Run ruff format check
+        run: ruff format --check git/src
