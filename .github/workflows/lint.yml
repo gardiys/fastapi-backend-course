@@ -1,0 +1,37 @@
+name: Lint and Check Code Quality
+
+on:
+  push:
+    branches: [ main, master, second-branch ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install ruff
+        run: pip install ruff==0.8.0
+
+      - name: Run Ruff linter
+        run: ruff check git/src
+
+      - name: Check Ruff formatting
+        run: ruff format --check git/src
