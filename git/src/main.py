@@ -94,11 +94,9 @@ def main():
             # Получаем новый список с добавленной книгой
             new_books = add_book(books, title, author, year)
             books = new_books  # Обновляем переменную, чтобы сохранить изменения
-<<<<<<< HEAD
-            saving_books(books)  # Сразу сохраняем в файл
-=======
+
             save_books(books)  # Сразу сохраняем в файл
->>>>>>> upstream/main
+
             print("Книга добавлена!")
 
         elif choice == '3':
@@ -106,15 +104,11 @@ def main():
             title_to_remove = input("Введите название книги, которую хотите удалить: ").strip()
 
             new_books = remove_book(books, title_to_remove)
-<<<<<<< HEAD
-            if len(new_books) > len(books):
-                books = new_books
-                saving_books(books)
-=======
+
             if len(new_books) < len(books):
                 books = new_books
                 save_books(books)
->>>>>>> upstream/main
+
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
@@ -129,18 +123,16 @@ def main():
             else:
                 print("Ничего не найдено.")
 
-<<<<<<< HEAD
-        elif choice == '6':
-=======
+
         elif choice == '5':
->>>>>>> upstream/main
+
             print("Выход из программы.")
             break
 
         else:
             print("Некорректный ввод. Попробуйте ещё раз.")
 
-<<<<<<< HEAD
+
 
 
 
@@ -148,7 +140,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-=======
-if __name__ == "__main__":
-    main()
->>>>>>> upstream/main
