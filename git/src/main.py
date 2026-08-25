@@ -14,7 +14,11 @@ def load_books(filename='library.json'):
         except json.JSONDecodeError:
             return []
 
+<<<<<<< HEAD
 def save_books(books, filename='library.json'):
+=======
+def saving_books(books, filename='library.json'):
+>>>>>>> origin/second-branch
     """
     Сохранение списка книг в JSON-файл.
     """
@@ -94,7 +98,11 @@ def main():
             # Получаем новый список с добавленной книгой
             new_books = add_book(books, title, author, year)
             books = new_books  # Обновляем переменную, чтобы сохранить изменения
+<<<<<<< HEAD
             save_books(books)  # Сразу сохраняем в файл
+=======
+            saving_books(books)  # Сразу сохраняем в файл
+>>>>>>> origin/second-branch
             print("Книга добавлена!")
 
         elif choice == '3':
@@ -102,9 +110,15 @@ def main():
             title_to_remove = input("Введите название книги, которую хотите удалить: ").strip()
 
             new_books = remove_book(books, title_to_remove)
+<<<<<<< HEAD
             if len(new_books) < len(books):
                 books = new_books
                 save_books(books)
+=======
+            if len(new_books) > len(books):
+                books = new_books
+                saving_books(books)
+>>>>>>> origin/second-branch
                 print("Книга удалена!")
             else:
                 print("Книга с таким названием не найдена.")
@@ -119,12 +133,26 @@ def main():
             else:
                 print("Ничего не найдено.")
 
+<<<<<<< HEAD
         elif choice == '5':
+=======
+        elif choice == '6':
+>>>>>>> origin/second-branch
             print("Выход из программы.")
             break
 
         else:
             print("Некорректный ввод. Попробуйте ещё раз.")
 
+<<<<<<< HEAD
 if __name__ == "__main__":
     main()
+=======
+
+
+
+
+
+if __name__ == "__main__":
+    main()
+>>>>>>> origin/second-branch
