@@ -1,0 +1,24 @@
+name: ruff
+run-name: ${{ github.actor }} run ruff auto-check.
+on: [push]
+jobs:
+  run-ruff:
+    name: Тестирование ruff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13' 
+      - name: Установка poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+      - name: Установка зависимостей
+        run: poetry install --no-root
+      - name: Исправления ruff
+        run: | 
+          poetry run ruff check . --fix
+          poetry run ruff format .
