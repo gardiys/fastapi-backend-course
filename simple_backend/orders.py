@@ -10,7 +10,7 @@ class Order:
         if isinstance(dish, Dish):
             self.dishes.append(dish)
         else:
-            raise ValueError("Можно добавлять только объекты класса Dish.")
+            raise TypeError("Можно добавлять только объекты класса Dish.")
 
     def remove_dish(self, dish):
         if dish in self.dishes:
